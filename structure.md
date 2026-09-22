@@ -614,9 +614,7 @@ set -e
 go test ./tst -v
 ```
 
-If UI tests require Chrome, the script may verify that Chrome/Chromium is available before running.
-
-Keep this check simple and explicit.
+The final test command must build a Docker test target containing Chrome/Chromium and run the complete click-driven UI journey there. Missing host browser software must never cause the UI test to be skipped. A change is not complete until this containerized browser flow passes.
 
 ---
 

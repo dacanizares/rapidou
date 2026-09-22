@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-go test ./... -v
+if [[ -n "${CONTAINER_ENGINE:-}" ]]; then
+    engine="$CONTAINER_ENGINE"
+elif command -v docker >/dev/null 2>&1; then
+    engine="docker"
+elif command -v podman >/dev/null 2>&1; then
+    engine="podman"
+else
+    echo "error: Docker or Podman is required for the functional UI harness" >&2
+    exit 1
+fi
+
+image="rapidou-functional-test"
+
+"$engine" build --target functional-test -t "$image" .
+"$engine" run --rm --shm-size=256m "$image"

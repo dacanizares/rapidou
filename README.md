@@ -22,7 +22,7 @@ Run the complete functional contract and build the single binary with:
 ./run/build
 ```
 
-The browser flow runs when Chrome or Chromium is installed. API flows always run with `httptest`. Production startup requires an explicit `APP_JWT_SECRET`; the defaults above exist only in `run/dev`.
+`./run/test` is the mandatory completion gate. It builds the Dockerfile `functional-test` target with Chromium and executes both the API contract and the complete click-driven browser journey; a skipped UI test is a failure, not an acceptable result. Docker is selected first and Podman is supported as a Docker-compatible fallback. Production startup requires an explicit `APP_JWT_SECRET`; the defaults above exist only in `run/dev`.
 
 Build this application with extreme simplicity as the primary architectural constraint.
 

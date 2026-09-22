@@ -17,8 +17,9 @@ import (
 // RunUI executes one high-value browser journey. It skips when Chrome is absent.
 func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 	t.Helper()
-	if !browserAvailable() {
-		t.Skip("Chrome or Chromium is not installed; API contract still ran")
+	browserPath := browserExecutable()
+	if browserPath == "" {
+		t.Fatal("Chrome or Chromium is required; run the mandatory containerized harness with ./run/test")
 	}
 
 	app, closeApp := factory(t)
@@ -26,11 +27,17 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 	server := httptest.NewServer(app)
 	defer server.Close()
 
-	allocator, cancelAllocator := chromedp.NewExecAllocator(context.Background(), append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", true))...)
+	allocatorOptions := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.ExecPath(browserPath),
+		chromedp.Flag("headless", true),
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("disable-dev-shm-usage", true),
+	)
+	allocator, cancelAllocator := chromedp.NewExecAllocator(context.Background(), allocatorOptions...)
 	defer cancelAllocator()
 	ctx, cancel := chromedp.NewContext(allocator)
 	defer cancel()
-	ctx, timeout := context.WithTimeout(ctx, 20*time.Second)
+	ctx, timeout := context.WithTimeout(ctx, 45*time.Second)
 	defer timeout()
 	uploadPath := filepath.Join(t.TempDir(), "museum.png")
 	if err := os.WriteFile(uploadPath, []byte{0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n', 0, 0, 0, 0}, 0o600); err != nil {
@@ -92,11 +99,11 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 	}
 }
 
-func browserAvailable() bool {
+func browserExecutable() string {
 	for _, name := range []string{"google-chrome", "chromium", "chromium-browser", "chrome"} {
-		if _, err := exec.LookPath(name); err == nil {
-			return true
+		if path, err := exec.LookPath(name); err == nil {
+			return path
 		}
 	}
-	return false
+	return ""
 }

@@ -10,4 +10,4 @@ Run it from the parent repository with:
 ./run/test
 ```
 
-Chrome/Chromium is optional for local API-only work. When it is unavailable, the UI flow reports a skip rather than hiding an API failure.
+The command always builds and runs the Dockerfile `functional-test` target, which includes Chromium. The UI journey is mandatory and fails if the browser cannot start; it must never be skipped as an acceptable final result. Docker is preferred, with Podman supported as a Docker-compatible fallback through the same Dockerfile.

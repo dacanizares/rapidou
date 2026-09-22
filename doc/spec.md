@@ -34,4 +34,10 @@ Rapidou includes a small video game museum as its complete example application.
 - Both font families are bundled with the application and must not depend on a third-party font service.
 - The catalog and both popups remain usable on narrow mobile viewports without horizontal scrolling.
 
+## Acceptance gate
+
+- No implementation change is complete until `./run/test` passes.
+- The command must run the API contract and the complete click-driven UI journey in the Dockerfile `functional-test` target with a real Chromium browser.
+- A skipped browser test, host-only test, API-only run, successful build, or manual HTTP check is not sufficient acceptance evidence.
+
 Startup requires `APP_JWT_SECRET`. Set both `APP_ADMIN_EMAIL` and `APP_ADMIN_PASSWORD` to create the first user in an empty database. They are ignored once a user exists.
