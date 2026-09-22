@@ -1,4 +1,4 @@
-const state = { currentUser: null, games: [] };
+const state = { currentUser: null, games: [], editingGameID: null };
 
 async function api(path, options = {}) {
     const response = await fetch(path, {
@@ -12,7 +12,7 @@ async function api(path, options = {}) {
 
 function showAuthenticated(authenticated) {
     document.querySelector("#login-view").classList.toggle("hidden", authenticated);
-    document.querySelector("#curator-view").classList.toggle("hidden", !authenticated);
+    document.querySelector("#new-game").classList.toggle("hidden", !authenticated);
     document.querySelector("#logout").classList.toggle("hidden", !authenticated);
 }
 
@@ -28,13 +28,19 @@ function GameCard(game) {
         placeholder.textContent = "Sin imagen";
         gallery.append(placeholder);
     } else {
-        gallery.append(...game.images.map((image) => {
+        gallery.append(...game.images.slice(0, 2).map((image) => {
             const element = document.createElement("img");
             element.src = image.src;
             element.alt = image.alt;
             element.loading = "lazy";
             return element;
         }));
+        if (game.images.length > 2) {
+            const count = document.createElement("span");
+            count.className = "image-count";
+            count.textContent = `+${game.images.length - 2}`;
+            gallery.append(count);
+        }
     }
 
     const year = document.createElement("span");
@@ -54,29 +60,20 @@ function GameCard(game) {
 
     article.append(gallery, year, title, platform, description);
     if (state.currentUser) {
-        const upload = document.createElement("form");
-        upload.className = "image-upload";
-        const input = document.createElement("input");
-        input.type = "file";
-        input.name = "image";
-        input.accept = "image/jpeg,image/png,image/gif,image/webp";
-        input.required = true;
-        input.setAttribute("aria-label", `Imagen para ${game.title}`);
-        const uploadButton = document.createElement("button");
-        uploadButton.className = "btn";
-        uploadButton.type = "submit";
-        uploadButton.textContent = "Subir imagen";
-        const uploadMessage = document.createElement("span");
-        uploadMessage.className = "upload-message";
-        upload.addEventListener("submit", (event) => uploadGameImage(game, event, uploadMessage));
-        upload.append(input, uploadButton, uploadMessage);
-
+        const actions = document.createElement("div");
+        actions.className = "artifact-actions";
+        const edit = document.createElement("button");
+        edit.className = "btn";
+        edit.type = "button";
+        edit.textContent = "Editar";
+        edit.addEventListener("click", () => openEditGame(game));
         const remove = document.createElement("button");
         remove.className = "btn btn-danger";
         remove.type = "button";
-        remove.textContent = "Retirar pieza";
+        remove.textContent = "Retirar";
         remove.addEventListener("click", () => deleteGame(game));
-        article.append(upload, remove);
+        actions.append(edit, remove);
+        article.append(actions);
     }
     return article;
 }
@@ -113,26 +110,148 @@ async function login(event) {
     }
 }
 
-async function createGame(event) {
+function openNewGame() {
+    state.editingGameID = null;
+    document.querySelector("#game-form").reset();
+    document.querySelector("#dialog-title").textContent = "Agregar pieza";
+    document.querySelector("#save").textContent = "Crear pieza";
+    document.querySelector("#game-error").textContent = "";
+    document.querySelector("#image-manager").classList.add("hidden");
+    document.querySelector("#game-dialog").showModal();
+}
+
+function openEditGame(game) {
+    state.editingGameID = game.id;
+    const form = document.querySelector("#game-form");
+    form.elements.title.value = game.title;
+    form.elements.platform.value = game.platform;
+    form.elements.release_year.value = game.release_year;
+    form.elements.description.value = game.description;
+    document.querySelector("#dialog-title").textContent = `Editar ${game.title}`;
+    document.querySelector("#save").textContent = "Guardar cambios";
+    document.querySelector("#game-error").textContent = "";
+    document.querySelector("#image-error").textContent = "";
+    document.querySelector("#image-manager").classList.remove("hidden");
+    renderManagedImages(game);
+    document.querySelector("#game-dialog").showModal();
+}
+
+function closeGameDialog() {
+    document.querySelector("#game-dialog").close();
+    state.editingGameID = null;
+}
+
+async function saveGame(event) {
     event.preventDefault();
     const form = event.currentTarget;
     const error = document.querySelector("#game-error");
     error.textContent = "";
+    const input = {
+        title: form.elements.title.value,
+        platform: form.elements.platform.value,
+        release_year: Number(form.elements.release_year.value),
+        description: form.elements.description.value
+    };
     try {
-        await api("/api/games", {
-            method: "POST",
-            body: JSON.stringify({
-                title: form.elements.title.value,
-                platform: form.elements.platform.value,
-                release_year: Number(form.elements.release_year.value),
-                description: form.elements.description.value
-            })
+        const creating = state.editingGameID === null;
+        const saved = await api(creating ? "/api/games" : `/api/games/${state.editingGameID}`, {
+            method: creating ? "POST" : "PUT",
+            body: JSON.stringify(input)
         });
-        form.reset();
+        state.editingGameID = saved.id;
         await refreshGames();
+        const game = state.games.find((item) => item.id === saved.id);
+        document.querySelector("#dialog-title").textContent = `Editar ${game.title}`;
+        document.querySelector("#save").textContent = "Guardar cambios";
+        document.querySelector("#image-manager").classList.remove("hidden");
+        renderManagedImages(game);
     } catch (cause) {
         error.textContent = cause.message;
     }
+}
+
+function renderManagedImages(game) {
+    const root = document.querySelector("#managed-images");
+    if (game.images.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "manager-empty";
+        empty.textContent = "Esta pieza todavía no tiene imágenes.";
+        root.replaceChildren(empty);
+        return;
+    }
+    root.replaceChildren(...game.images.map((image) => {
+        const row = document.createElement("div");
+        row.className = "managed-image";
+        const preview = document.createElement("img");
+        preview.src = image.src;
+        preview.alt = image.alt;
+        const details = document.createElement("div");
+        details.className = "managed-image-details";
+        const kind = document.createElement("span");
+        kind.className = `source-badge source-${image.kind}`;
+        kind.textContent = image.kind === "url" ? "URL" : "Archivo";
+        const source = document.createElement(image.kind === "url" ? "a" : "span");
+        source.className = "image-source";
+        source.textContent = image.kind === "url" ? image.src : "Guardada en SQLite";
+        if (image.kind === "url") {
+            source.href = image.src;
+            source.target = "_blank";
+            source.rel = "noreferrer";
+        }
+        details.append(kind, source);
+        const remove = document.createElement("button");
+        remove.className = "btn image-remove";
+        remove.type = "button";
+        remove.textContent = "Eliminar";
+        remove.addEventListener("click", () => deleteGameImage(image.id));
+        row.append(preview, details, remove);
+        return row;
+    }));
+}
+
+async function refreshEditor() {
+    await refreshGames();
+    const game = state.games.find((item) => item.id === state.editingGameID);
+    if (game) renderManagedImages(game);
+}
+
+async function addImageURL(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const error = document.querySelector("#image-error");
+    error.textContent = "";
+    try {
+        await api(`/api/games/${state.editingGameID}/image-links`, {
+            method: "POST",
+            body: JSON.stringify({ url: form.elements.url.value, alt: form.elements.alt.value })
+        });
+        form.reset();
+        await refreshEditor();
+    } catch (cause) {
+        error.textContent = cause.message;
+    }
+}
+
+async function uploadGameImage(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const error = document.querySelector("#image-error");
+    error.textContent = "";
+    const data = new FormData(form);
+    try {
+        const response = await fetch(`/api/games/${state.editingGameID}/images`, { method: "POST", body: data });
+        const body = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(body?.error || "No se pudo subir la imagen");
+        form.reset();
+        await refreshEditor();
+    } catch (cause) {
+        error.textContent = cause.message;
+    }
+}
+
+async function deleteGameImage(imageID) {
+    await api(`/api/game-images/${imageID}`, { method: "DELETE" });
+    await refreshEditor();
 }
 
 async function deleteGame(game) {
@@ -141,25 +260,9 @@ async function deleteGame(game) {
     await refreshGames();
 }
 
-async function uploadGameImage(game, event, message) {
-    event.preventDefault();
-    message.textContent = "";
-    const form = event.currentTarget;
-    const data = new FormData(form);
-    data.set("alt", game.title);
-    try {
-        const response = await fetch(`/api/games/${game.id}/images`, { method: "POST", body: data });
-        const body = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(body?.error || "No se pudo subir la imagen");
-        form.reset();
-        await refreshGames();
-    } catch (cause) {
-        message.textContent = cause.message;
-    }
-}
-
 async function logout() {
     await api("/api/logout", { method: "POST" });
+    if (document.querySelector("#game-dialog").open) closeGameDialog();
     state.currentUser = null;
     document.querySelector("#current-user").textContent = "";
     showAuthenticated(false);
@@ -168,8 +271,16 @@ async function logout() {
 
 async function start() {
     document.querySelector("#login-form").addEventListener("submit", login);
-    document.querySelector("#game-form").addEventListener("submit", createGame);
+    document.querySelector("#new-game").addEventListener("click", openNewGame);
+    document.querySelector("#game-form").addEventListener("submit", saveGame);
+    document.querySelector("#image-url-form").addEventListener("submit", addImageURL);
+    document.querySelector("#image-upload-form").addEventListener("submit", uploadGameImage);
+    document.querySelector("#close-dialog").addEventListener("click", closeGameDialog);
+    document.querySelector("#cancel-dialog").addEventListener("click", closeGameDialog);
     document.querySelector("#logout").addEventListener("click", logout);
+    document.querySelector("#game-dialog").addEventListener("click", (event) => {
+        if (event.target === event.currentTarget) closeGameDialog();
+    });
     await refreshGames();
     try {
         state.currentUser = await api("/api/me");

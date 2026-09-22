@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -13,8 +14,14 @@ import (
 const maxImageSize = 5 << 20
 
 type GameImage struct {
-	ID  int64  `json:"id"`
-	Src string `json:"src"`
+	ID   int64  `json:"id"`
+	Src  string `json:"src"`
+	Alt  string `json:"alt"`
+	Kind string `json:"kind"`
+}
+
+type imageLinkInput struct {
+	URL string `json:"url"`
 	Alt string `json:"alt"`
 }
 
@@ -76,7 +83,55 @@ func (app *App) uploadGameImageHandler(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not save image")
 		return
 	}
-	writeJSON(w, http.StatusCreated, GameImage{ID: id, Src: fmt.Sprintf("/api/game-images/%d", id), Alt: alt})
+	writeJSON(w, http.StatusCreated, GameImage{ID: id, Src: fmt.Sprintf("/api/game-images/%d", id), Alt: alt, Kind: "upload"})
+}
+
+func (app *App) addGameImageLinkHandler(w http.ResponseWriter, r *http.Request) {
+	gameID, ok := parseID(r)
+	if !ok {
+		writeError(w, http.StatusBadRequest, "invalid museum piece ID")
+		return
+	}
+	game, err := gameByID(app.DB, gameID)
+	if errors.Is(err, sql.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "museum piece not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not read museum piece")
+		return
+	}
+	var input imageLinkInput
+	if !readJSON(w, r, &input) {
+		return
+	}
+	input.URL = strings.TrimSpace(input.URL)
+	parsed, err := url.ParseRequestURI(input.URL)
+	if err != nil || parsed.Scheme != "https" || parsed.Host == "" {
+		writeError(w, http.StatusBadRequest, "image URL must be a valid HTTPS URL")
+		return
+	}
+	input.Alt = strings.TrimSpace(input.Alt)
+	if input.Alt == "" {
+		input.Alt = game.Title
+	}
+	result, err := app.DB.Exec(`
+		INSERT INTO game_images (game_id, url, alt_text, created_at) VALUES (?, ?, ?, ?)
+	`, gameID, input.URL, input.Alt, time.Now().UTC().Format(time.RFC3339))
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "unique") {
+			writeError(w, http.StatusConflict, "image URL already exists")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "could not save image URL")
+		return
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not save image URL")
+		return
+	}
+	writeJSON(w, http.StatusCreated, GameImage{ID: id, Src: input.URL, Alt: input.Alt, Kind: "url"})
 }
 
 func (app *App) gameImageHandler(w http.ResponseWriter, r *http.Request) {
@@ -137,8 +192,10 @@ func imagesByGameID(db *sql.DB, gameID int64) ([]GameImage, error) {
 		}
 		if remoteURL.Valid {
 			image.Src = remoteURL.String
+			image.Kind = "url"
 		} else {
 			image.Src = fmt.Sprintf("/api/game-images/%d", image.ID)
+			image.Kind = "upload"
 		}
 		images = append(images, image)
 	}

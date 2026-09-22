@@ -37,7 +37,7 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 		t.Fatal(err)
 	}
 
-	var usersText string
+	var museumText string
 	if err := chromedp.Run(ctx,
 		chromedp.Navigate(server.URL),
 		chromedp.WaitVisible("#login-view", chromedp.ByQuery),
@@ -47,22 +47,33 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 		chromedp.Poll(`document.querySelector("#login-error").textContent.includes("invalid email or password")`, nil),
 		chromedp.SetValue("#login-password", credentials.Password, chromedp.ByQuery),
 		chromedp.Click("#login", chromedp.ByQuery),
-		chromedp.WaitVisible("#curator-view", chromedp.ByQuery),
+		chromedp.WaitVisible("#new-game", chromedp.ByQuery),
+		chromedp.Click("#new-game", chromedp.ByQuery),
+		chromedp.WaitVisible("#game-dialog", chromedp.ByQuery),
 		chromedp.SendKeys("#title", "The Legend of Zelda", chromedp.ByQuery),
 		chromedp.SendKeys("#platform", "NES", chromedp.ByQuery),
 		chromedp.SendKeys("#release-year", "1986", chromedp.ByQuery),
 		chromedp.SendKeys("#description", "An adventure preserved by the museum.", chromedp.ByQuery),
 		chromedp.Click("#save", chromedp.ByQuery),
 		chromedp.Poll(`document.querySelector("#games").textContent.includes("The Legend of Zelda")`, nil),
-		chromedp.SetUploadFiles(".image-upload input", []string{uploadPath}, chromedp.ByQuery),
-		chromedp.Click(".image-upload .btn", chromedp.ByQuery),
+		chromedp.WaitVisible("#image-manager", chromedp.ByQuery),
+		chromedp.SetUploadFiles("#image-upload-form input[type=file]", []string{uploadPath}, chromedp.ByQuery),
+		chromedp.Click("#image-upload-form .btn", chromedp.ByQuery),
+		chromedp.Poll(`document.querySelector("#managed-images .source-upload") !== null`, nil),
+		chromedp.SendKeys("#image-url", "https://example.com/zelda.jpg", chromedp.ByQuery),
+		chromedp.Click("#image-url-form .btn", chromedp.ByQuery),
+		chromedp.Poll(`document.querySelector("#managed-images .source-url") !== null`, nil),
 		chromedp.Poll(`document.querySelector("#games img[src*='/api/game-images/']") !== null`, nil),
-		chromedp.Text("#games", &usersText, chromedp.ByQuery),
+		chromedp.SetValue("#title", "The Legend of Zelda — Museum Edition", chromedp.ByQuery),
+		chromedp.Click("#save", chromedp.ByQuery),
+		chromedp.Poll(`document.querySelector("#games").textContent.includes("Museum Edition")`, nil),
+		chromedp.Click("#close-dialog", chromedp.ByQuery),
+		chromedp.Text("#games", &museumText, chromedp.ByQuery),
 	); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(usersText, "The Legend of Zelda") {
-		t.Fatal(fmt.Errorf("created museum piece is not visible; collection contains %q", usersText))
+	if !strings.Contains(museumText, "The Legend of Zelda — Museum Edition") {
+		t.Fatal(fmt.Errorf("edited museum piece is not visible; collection contains %q", museumText))
 	}
 }
 

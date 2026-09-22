@@ -76,21 +76,38 @@ input:focus, textarea:focus { border-color: var(--color-text); outline: 2px soli
 /* components */
 .card { padding: clamp(1.5rem, 4vw, 3rem); background: var(--color-surface); border: 1px solid transparent; border-radius: var(--radius-main); }
 .auth-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 430px); gap: var(--space-8); align-items: center; }
-.curator { display: grid; grid-template-columns: 0.45fr 1fr; gap: var(--space-8); background: var(--color-text); color: var(--color-bg); }
-.curator h2 { color: var(--color-bg); }
-.curator input, .curator textarea { background: #252522; border-color: rgb(250 249 245 / 25%); color: var(--color-bg); }
-.curator input:focus, .curator textarea:focus { border-color: var(--color-bg); outline-color: var(--color-bg); }
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 2.9rem; padding: 0.7rem 1.25rem; border: 1px solid var(--color-text); border-radius: 999px; background: transparent; color: inherit; font: 500 0.9rem/1 "Space Grotesk", sans-serif; cursor: pointer; }
 .btn:hover, .btn:focus { background: var(--color-text); color: var(--color-bg); }
 .btn-primary { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-text); }
 .btn-primary:hover, .btn-primary:focus { border-color: var(--color-accent-dark); background: var(--color-accent-dark); color: var(--color-bg); }
-.curator .btn:not(.btn-primary), .museum-header .btn { border-color: var(--color-bg); }
-.curator .btn:not(.btn-primary):hover, .museum-header .btn:hover { background: var(--color-bg); color: var(--color-text); }
-.btn-danger { align-self: end; margin-top: auto; border-color: var(--color-border); }
+.museum-header .btn { border-color: var(--color-bg); }
+.museum-header .btn:hover { background: var(--color-bg); color: var(--color-text); }
+.btn-danger { border-color: var(--color-border); }
 .eyebrow { margin-bottom: var(--space-2); color: var(--color-accent-dark); font: 400 0.92rem/1.1 "Share Tech", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
-.museum-header .eyebrow, .curator .eyebrow { color: #ebc9b7; }
+.museum-header .eyebrow { color: #ebc9b7; }
 .message { min-height: 1.5em; color: var(--color-accent-dark); font-size: 0.88rem; font-weight: 500; }
-.curator .message { color: #ebc9b7; }
+
+/* dialog */
+.game-dialog { width: min(920px, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); padding: 0; overflow: hidden; border: 0; border-radius: var(--radius-main); background: transparent; color: var(--color-text); box-shadow: 0 24px 80px rgb(20 20 19 / 35%); }
+.game-dialog::backdrop { background: rgb(20 20 19 / 68%); }
+.dialog-shell { max-height: calc(100dvh - 2rem); padding: clamp(1.5rem, 4vw, 3rem); overflow-y: auto; background: var(--color-bg); }
+.dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); }
+.dialog-header h2 { font-size: clamp(2.2rem, 6vw, 4.5rem); }
+.dialog-close { width: 3rem; height: 3rem; flex: 0 0 auto; border: 1px solid var(--color-border); border-radius: 50%; background: var(--color-surface); color: var(--color-text); font: 400 2rem/1 "Space Grotesk", sans-serif; cursor: pointer; }
+.dialog-close:hover, .dialog-close:focus { background: var(--color-text); color: var(--color-bg); }
+.dialog-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: var(--space-2); }
+.image-manager { display: grid; gap: var(--space-4); margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border); }
+.manager-help, .manager-empty { color: var(--color-muted); }
+.managed-images { display: grid; gap: var(--space-2); }
+.managed-image { display: grid; grid-template-columns: 100px minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; padding: var(--space-2); border-radius: var(--radius-small); background: var(--color-surface); }
+.managed-image img { width: 100px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; }
+.managed-image-details { min-width: 0; display: grid; gap: 0.25rem; }
+.source-badge { width: fit-content; padding: 0.2rem 0.5rem; border-radius: 999px; background: var(--color-surface-strong); font: 400 0.78rem/1 "Share Tech", monospace; text-transform: uppercase; }
+.source-url { background: #ebc9b7; }
+.image-source { overflow: hidden; color: var(--color-muted); font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+a.image-source { color: var(--color-accent-dark); }
+.image-remove { min-height: 2.4rem; padding-block: 0.5rem; }
+.image-source-form { display: grid; grid-template-columns: 1fr 0.8fr auto; gap: var(--space-2); align-items: end; padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-small); }
 
 /* museum */
 .game-form { grid-template-columns: 2fr 1.3fr 0.65fr; align-items: end; }
@@ -101,15 +118,14 @@ input:focus, textarea:focus { border-color: var(--color-text); outline: 2px soli
 .museum-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 .artifact { min-height: 430px; display: flex; flex-direction: column; gap: var(--space-2); overflow: hidden; }
 .artifact:hover { border-color: var(--color-accent); }
-.artifact-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin: calc(clamp(1.5rem, 4vw, 3rem) * -1) calc(clamp(1.5rem, 4vw, 3rem) * -1) var(--space-4); background: var(--color-text); }
+.artifact-gallery { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin: calc(clamp(1.5rem, 4vw, 3rem) * -1) calc(clamp(1.5rem, 4vw, 3rem) * -1) var(--space-4); background: var(--color-text); }
 .artifact-gallery img, .artifact-placeholder { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
 .artifact-gallery img:only-child, .artifact-placeholder:only-child { grid-column: 1 / -1; }
 .artifact-placeholder { display: grid; place-items: center; color: var(--color-surface-strong); font: 400 0.95rem/1 "Share Tech", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
 .artifact-year { width: fit-content; padding: 0.35rem 0.65rem; border-radius: 999px; background: var(--color-text); color: var(--color-bg); font: 400 0.9rem/1 "Share Tech", monospace; }
 .artifact-description { max-width: 52ch; margin-top: var(--space-2); color: var(--color-muted); }
-.image-upload { display: grid; grid-template-columns: 1fr auto; gap: var(--space-1); align-items: center; margin-top: auto; }
-.image-upload input { min-width: 0; background: var(--color-bg); font-size: 0.78rem; }
-.upload-message { grid-column: 1 / -1; color: var(--color-accent-dark); font-size: 0.8rem; }
+.image-count { position: absolute; right: var(--space-2); bottom: var(--space-2); padding: 0.4rem 0.6rem; border-radius: 999px; background: var(--color-text); color: var(--color-bg); font: 400 0.85rem/1 "Share Tech", monospace; }
+.artifact-actions { display: flex; gap: var(--space-2); margin-top: auto; }
 .empty { color: var(--color-muted); text-align: center; }
 
 /* state */
@@ -118,7 +134,7 @@ input:focus, textarea:focus { border-color: var(--color-text); outline: 2px soli
 /* responsive */
 @media (max-width: 850px) {
     .museum-header { min-height: 65vh; }
-    .header-content, .auth-card, .curator { grid-template-columns: 1fr; }
+    .header-content, .auth-card { grid-template-columns: 1fr; }
     .session { justify-content: flex-start; }
     .game-form { grid-template-columns: 1fr 1fr; }
     .description-field, .game-form .message { grid-column: 1 / -1; }
@@ -130,5 +146,10 @@ input:focus, textarea:focus { border-color: var(--color-text); outline: 2px soli
     .museum-grid, .game-form { grid-template-columns: 1fr; }
     .description-field, .game-form .message { grid-column: auto; }
     .collection-heading { align-items: flex-start; flex-direction: column; }
-    .image-upload { grid-template-columns: 1fr; }
+    .game-dialog { width: calc(100% - 1rem); max-height: calc(100dvh - 1rem); }
+    .dialog-shell { max-height: calc(100dvh - 1rem); }
+    .image-source-form { grid-template-columns: 1fr; }
+    .managed-image { grid-template-columns: 72px minmax(0, 1fr); }
+    .managed-image img { width: 72px; }
+    .managed-image .image-remove { grid-column: 1 / -1; }
 }

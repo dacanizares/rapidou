@@ -123,6 +123,7 @@ func (app *App) Handler() http.Handler {
 	mux.Handle("PUT /api/games/{id}", app.authenticate(http.HandlerFunc(app.updateGameHandler)))
 	mux.Handle("DELETE /api/games/{id}", app.authenticate(http.HandlerFunc(app.deleteGameHandler)))
 	mux.Handle("POST /api/games/{id}/images", app.authenticate(http.HandlerFunc(app.uploadGameImageHandler)))
+	mux.Handle("POST /api/games/{id}/image-links", app.authenticate(http.HandlerFunc(app.addGameImageLinkHandler)))
 	mux.HandleFunc("GET /api/game-images/{id}", app.gameImageHandler)
 	mux.Handle("DELETE /api/game-images/{id}", app.authenticate(http.HandlerFunc(app.deleteGameImageHandler)))
 

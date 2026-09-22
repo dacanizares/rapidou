@@ -19,8 +19,9 @@ type game struct {
 	Platform    string `json:"platform"`
 	ReleaseYear int    `json:"release_year"`
 	Images      []struct {
-		ID  int64  `json:"id"`
-		Src string `json:"src"`
+		ID   int64  `json:"id"`
+		Src  string `json:"src"`
+		Kind string `json:"kind"`
 	} `json:"images"`
 }
 
@@ -131,6 +132,17 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 		if served.Header.Get("Content-Type") != "image/png" {
 			t.Fatalf("expected uploaded PNG, got %q", served.Header.Get("Content-Type"))
 		}
+		linked := request(t, app, http.MethodPost, fmt.Sprintf("/api/games/%d/image-links", newGame.ID), token, map[string]string{
+			"url": "https://example.com/museum.jpg", "alt": "Remote museum image",
+		})
+		expectStatus(t, linked, http.StatusCreated)
+		linkedImage := decode[struct {
+			ID   int64  `json:"id"`
+			Kind string `json:"kind"`
+		}](t, linked)
+		if linkedImage.Kind != "url" {
+			t.Fatalf("expected URL image kind, got %+v", linkedImage)
+		}
 
 		updated := request(t, app, http.MethodPut, "/api/games/1", token, map[string]any{
 			"title": "Super Mario Bros.", "platform": "Nintendo Entertainment System", "release_year": 1985,
@@ -145,10 +157,11 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 		expectStatus(t, listed, http.StatusOK)
 		if games := decode[[]game](t, listed); len(games) != 1 {
 			t.Fatalf("expected one public museum piece, got %+v", games)
-		} else if len(games[0].Images) != 1 {
-			t.Fatalf("expected uploaded image in public museum, got %+v", games[0].Images)
+		} else if len(games[0].Images) != 2 {
+			t.Fatalf("expected uploaded and URL images in public museum, got %+v", games[0].Images)
 		}
 		expectStatus(t, request(t, app, http.MethodDelete, fmt.Sprintf("/api/game-images/%d", image.ID), token, nil), http.StatusNoContent)
+		expectStatus(t, request(t, app, http.MethodDelete, fmt.Sprintf("/api/game-images/%d", linkedImage.ID), token, nil), http.StatusNoContent)
 
 		expectStatus(t, request(t, app, http.MethodDelete, "/api/games/1", token, nil), http.StatusNoContent)
 		expectStatus(t, request(t, app, http.MethodDelete, "/api/games/1", token, nil), http.StatusNotFound)
@@ -175,6 +188,9 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 		expectStatus(t, created, http.StatusCreated)
 		game := decode[game](t, created)
 		expectStatus(t, uploadImage(t, app, fmt.Sprintf("/api/games/%d/images", game.ID), token, "note.txt", []byte("not an image")), http.StatusBadRequest)
+		expectStatus(t, request(t, app, http.MethodPost, fmt.Sprintf("/api/games/%d/image-links", game.ID), token, map[string]string{
+			"url": "http://example.com/not-secure.jpg", "alt": "Invalid",
+		}), http.StatusBadRequest)
 	})
 }
 
@@ -196,6 +212,9 @@ func RunSampleMuseum(t *testing.T, factory Factory) {
 		for _, image := range game.Images {
 			if !strings.HasPrefix(image.Src, "https://") {
 				t.Fatalf("expected remote HTTPS seed image for %s, got %q", game.Title, image.Src)
+			}
+			if image.Kind != "url" {
+				t.Fatalf("expected URL seed image for %s, got %q", game.Title, image.Kind)
 			}
 		}
 	}

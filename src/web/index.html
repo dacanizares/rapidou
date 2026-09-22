@@ -14,6 +14,7 @@
             <p class="intro">Una colección pequeña de videojuegos, consolas y recuerdos que hicieron historia.</p>
             <div class="session row">
                 <span id="current-user"></span>
+                <button class="btn hidden" id="new-game" type="button">Agregar pieza</button>
                 <button class="btn hidden" id="logout" type="button">Cerrar sesión</button>
             </div>
         </div>
@@ -33,21 +34,6 @@
             </form>
         </section>
 
-        <section class="card curator hidden" id="curator-view">
-            <div>
-                <p class="eyebrow">Mesa de catalogación</p>
-                <h2>Agregar pieza</h2>
-            </div>
-            <form class="grid game-form" id="game-form">
-                <label>Título <input id="title" name="title" required></label>
-                <label>Plataforma <input id="platform" name="platform" placeholder="Arcade, NES, PC…" required></label>
-                <label>Año <input id="release-year" name="release_year" type="number" min="1950" max="2100" required></label>
-                <label class="description-field">Historia de la pieza <textarea id="description" name="description" rows="3"></textarea></label>
-                <p class="message" id="game-error" role="alert"></p>
-                <button class="btn btn-primary" id="save" type="submit">Ingresar al museo</button>
-            </form>
-        </section>
-
         <section class="collection-section">
             <div class="collection-heading">
                 <div>
@@ -60,6 +46,52 @@
             <div class="museum-grid" id="games" aria-live="polite"></div>
         </section>
     </main>
+
+    <dialog class="game-dialog" id="game-dialog">
+        <div class="dialog-shell">
+            <header class="dialog-header">
+                <div>
+                    <p class="eyebrow">Mesa de catalogación</p>
+                    <h2 id="dialog-title">Agregar pieza</h2>
+                </div>
+                <button class="dialog-close" id="close-dialog" type="button" aria-label="Cerrar">×</button>
+            </header>
+
+            <form class="grid game-form" id="game-form">
+                <label>Título <input id="title" name="title" required></label>
+                <label>Plataforma <input id="platform" name="platform" placeholder="Arcade, NES, PC…" required></label>
+                <label>Año <input id="release-year" name="release_year" type="number" min="1950" max="2100" required></label>
+                <label class="description-field">Historia de la pieza <textarea id="description" name="description" rows="4"></textarea></label>
+                <p class="message" id="game-error" role="alert"></p>
+                <div class="dialog-actions">
+                    <button class="btn" id="cancel-dialog" type="button">Cancelar</button>
+                    <button class="btn btn-primary" id="save" type="submit">Guardar pieza</button>
+                </div>
+            </form>
+
+            <section class="image-manager hidden" id="image-manager">
+                <div>
+                    <p class="eyebrow">Archivo visual</p>
+                    <h3>Imágenes</h3>
+                    <p class="manager-help">Las imágenes por URL muestran su dirección. Los archivos subidos se guardan en SQLite.</p>
+                </div>
+                <div class="managed-images" id="managed-images"></div>
+
+                <form class="image-source-form" id="image-url-form">
+                    <label>Imagen por URL <input id="image-url" name="url" type="url" placeholder="https://…" required></label>
+                    <label>Texto alternativo <input name="alt" placeholder="Descripción breve"></label>
+                    <button class="btn" type="submit">Agregar URL</button>
+                </form>
+
+                <form class="image-source-form" id="image-upload-form">
+                    <label>Subir archivo <input name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" required></label>
+                    <label>Texto alternativo <input name="alt" placeholder="Descripción breve"></label>
+                    <button class="btn" type="submit">Subir imagen</button>
+                </form>
+                <p class="message" id="image-error" role="alert"></p>
+            </section>
+        </div>
+    </dialog>
     <script src="/assets/app.js" defer></script>
 </body>
 </html>
