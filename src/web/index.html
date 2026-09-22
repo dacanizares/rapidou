@@ -35,6 +35,24 @@
         </section>
     </main>
 
+    <dialog class="popup-dialog detail-dialog" id="detail-dialog" aria-labelledby="detail-title">
+        <div class="dialog-shell detail-shell">
+            <header class="dialog-header detail-header">
+                <div>
+                    <p class="eyebrow">Ficha de la colección</p>
+                    <h2 id="detail-title"></h2>
+                </div>
+                <button class="dialog-close" id="close-detail" type="button" aria-label="Cerrar">×</button>
+            </header>
+            <div class="detail-gallery" id="detail-gallery"></div>
+            <div class="detail-content">
+                <p class="detail-metadata" id="detail-metadata"></p>
+                <p class="detail-description" id="detail-description"></p>
+                <div class="store-links detail-store-links" id="detail-stores"></div>
+            </div>
+        </div>
+    </dialog>
+
     <dialog class="popup-dialog login-dialog" id="login-dialog">
         <div class="dialog-shell login-shell">
             <header class="dialog-header">

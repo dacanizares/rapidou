@@ -93,8 +93,17 @@ input:focus, textarea:focus { border-color: var(--color-text); outline: 2px soli
 .popup-dialog.is-visible::backdrop { background-color: rgb(20 20 19 / 68%); }
 .game-dialog { width: min(780px, calc(100% - 2rem)); }
 .login-dialog { width: min(500px, calc(100% - 2rem)); }
+.detail-dialog { width: min(900px, calc(100% - 2rem)); }
 .dialog-shell { max-height: calc(100dvh - 2rem); padding: clamp(1.5rem, 4vw, 3rem); overflow-y: auto; background: var(--color-bg); }
 .login-shell { padding: clamp(1.5rem, 5vw, 2.5rem); }
+.detail-shell { padding: 0; }
+.detail-header { margin: 0; padding: clamp(1.5rem, 4vw, 3rem); }
+.detail-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; background: var(--color-text); }
+.detail-gallery img, .detail-placeholder { width: 100%; min-height: 220px; max-height: 420px; object-fit: cover; }
+.detail-content { display: grid; gap: var(--space-3); padding: clamp(1.5rem, 4vw, 3rem); }
+.detail-metadata { color: var(--color-accent-dark); font: 400 1rem/1.1 "Share Tech", monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+.detail-description { max-width: 65ch; color: var(--color-muted); font-size: clamp(1rem, 2vw, 1.15rem); }
+.detail-store-links { margin-top: var(--space-2); padding-top: 0; }
 .dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
 .dialog-header h2 { font-size: clamp(2rem, 5vw, 3.4rem); }
 .dialog-close { width: 3rem; height: 3rem; flex: 0 0 auto; border: 1px solid var(--color-border); border-radius: 50%; background: var(--color-surface); color: var(--color-text); font: 400 2rem/1 "Space Grotesk", sans-serif; cursor: pointer; }
@@ -124,8 +133,9 @@ a.image-source { color: var(--color-accent-dark); }
 .collection-heading { display: flex; justify-content: space-between; align-items: end; gap: var(--space-3); padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border); }
 .counter, .artifact-platform { color: var(--color-muted); font-family: "Share Tech", monospace; font-size: 0.94rem; text-transform: uppercase; letter-spacing: 0.05em; }
 .museum-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
-.artifact { min-height: 430px; display: flex; flex-direction: column; gap: var(--space-2); overflow: hidden; }
-.artifact:hover { border-color: var(--color-accent); }
+.artifact { min-height: 430px; display: flex; flex-direction: column; gap: var(--space-2); overflow: hidden; cursor: pointer; }
+.artifact:hover, .artifact:focus-visible { border-color: var(--color-accent); }
+.artifact:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
 .artifact-gallery { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin: calc(clamp(1.5rem, 4vw, 3rem) * -1) calc(clamp(1.5rem, 4vw, 3rem) * -1) var(--space-4); background: var(--color-text); }
 .artifact-gallery img, .artifact-placeholder { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
 .artifact-gallery img:only-child, .artifact-placeholder:only-child { grid-column: 1 / -1; }
@@ -167,4 +177,6 @@ a.image-source { color: var(--color-accent-dark); }
     .managed-image { grid-template-columns: 72px minmax(0, 1fr); }
     .managed-image img { width: 72px; }
     .managed-image .image-remove { grid-column: 1 / -1; }
+    .detail-gallery { grid-template-columns: 1fr; }
+    .detail-gallery img, .detail-placeholder { min-height: 180px; }
 }

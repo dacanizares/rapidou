@@ -11,6 +11,8 @@ Rapidou includes a small video game museum as its complete example application.
 - A user cannot delete their own active account.
 - Names, valid unique emails, and passwords of at least eight characters are required when creating users.
 - Anyone can browse the museum collection.
+- Clicking a museum card, or focusing it and pressing Enter or Space, opens a responsive detail popup with every image, full description, platform, release year, and available store links.
+- Interactive controls inside a card keep their own behavior and do not open the detail popup.
 - An authenticated curator can add, edit, and remove museum pieces.
 - Adding and editing use one compact responsive popup; catalog cards remain focused on viewing and expose only small curator actions.
 - Each piece has a title, platform, release year, optional description, optional Steam URL, and optional GOG URL.

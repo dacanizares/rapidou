@@ -26,9 +26,62 @@ function closePopup(dialog) {
     dialog.close();
 }
 
+function StoreLinks(game) {
+    const stores = document.createElement("div");
+    stores.className = "store-links";
+    [["Steam", game.steam_url], ["GOG", game.gog_url]].forEach(([label, href]) => {
+        if (!href) return;
+        const link = document.createElement("a");
+        link.className = `store-link store-${label.toLowerCase()}`;
+        link.href = href;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = label;
+        stores.append(link);
+    });
+    return stores;
+}
+
+function openGameDetail(game) {
+    document.querySelector("#detail-title").textContent = game.title;
+    document.querySelector("#detail-metadata").textContent = `${game.platform} · ${game.release_year}`;
+    document.querySelector("#detail-description").textContent = game.description || "Pieza sin descripción catalogada.";
+
+    const gallery = document.querySelector("#detail-gallery");
+    if (game.images.length === 0) {
+        const placeholder = document.createElement("div");
+        placeholder.className = "artifact-placeholder detail-placeholder";
+        placeholder.textContent = "Sin imagen";
+        gallery.replaceChildren(placeholder);
+    } else {
+        gallery.replaceChildren(...game.images.map((image) => {
+            const element = document.createElement("img");
+            element.src = image.src;
+            element.alt = image.alt;
+            return element;
+        }));
+    }
+
+    const stores = StoreLinks(game);
+    stores.id = "detail-stores";
+    stores.classList.add("detail-store-links");
+    document.querySelector("#detail-stores").replaceWith(stores);
+    showPopup(document.querySelector("#detail-dialog"));
+}
+
 function GameCard(game) {
     const article = document.createElement("article");
     article.className = "artifact card";
+    article.tabIndex = 0;
+    article.setAttribute("aria-label", `Ver ficha de ${game.title}`);
+    article.addEventListener("click", (event) => {
+        if (!event.target.closest("a, button")) openGameDetail(game);
+    });
+    article.addEventListener("keydown", (event) => {
+        if (event.target !== article || (event.key !== "Enter" && event.key !== " ")) return;
+        event.preventDefault();
+        openGameDetail(game);
+    });
 
     const gallery = document.createElement("div");
     gallery.className = "artifact-gallery";
@@ -69,18 +122,7 @@ function GameCard(game) {
     description.textContent = game.description || "Pieza sin descripción catalogada.";
 
     article.append(gallery, year, title, platform, description);
-    const stores = document.createElement("div");
-    stores.className = "store-links";
-    [["Steam", game.steam_url], ["GOG", game.gog_url]].forEach(([label, href]) => {
-        if (!href) return;
-        const link = document.createElement("a");
-        link.className = `store-link store-${label.toLowerCase()}`;
-        link.href = href;
-        link.target = "_blank";
-        link.rel = "noreferrer";
-        link.textContent = label;
-        stores.append(link);
-    });
+    const stores = StoreLinks(game);
     if (stores.childElementCount > 0) article.append(stores);
     if (state.currentUser) {
         const actions = document.createElement("div");
@@ -306,6 +348,11 @@ async function start() {
     document.querySelector("#close-dialog").addEventListener("click", closeGameDialog);
     document.querySelector("#cancel-dialog").addEventListener("click", closeGameDialog);
     document.querySelector("#logout").addEventListener("click", logout);
+    document.querySelector("#close-detail").addEventListener("click", () => closePopup(document.querySelector("#detail-dialog")));
+    document.querySelector("#detail-dialog").addEventListener("click", (event) => {
+        if (event.target === event.currentTarget) closePopup(event.currentTarget);
+    });
+    document.querySelector("#detail-dialog").addEventListener("close", (event) => event.currentTarget.classList.remove("is-visible"));
     document.querySelector("#open-login").addEventListener("click", () => {
         document.querySelector("#login-error").textContent = "";
         showPopup(document.querySelector("#login-dialog"));

@@ -38,6 +38,7 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 	}
 
 	var museumText string
+	var detailText string
 	if err := chromedp.Run(ctx,
 		chromedp.Navigate(server.URL),
 		chromedp.WaitVisible("#open-login", chromedp.ByQuery),
@@ -73,12 +74,21 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 		chromedp.Poll(`document.querySelector("#games").textContent.includes("Museum Edition")`, nil),
 		chromedp.Click("#close-dialog", chromedp.ByQuery),
 		chromedp.Poll(`document.querySelectorAll("#games .store-link").length === 2`, nil),
+		chromedp.Click("#games .artifact", chromedp.ByQuery),
+		chromedp.WaitVisible("#detail-dialog", chromedp.ByQuery),
+		chromedp.Poll(`document.querySelectorAll("#detail-gallery img").length === 2`, nil),
+		chromedp.Poll(`document.querySelectorAll("#detail-stores .store-link").length === 2`, nil),
+		chromedp.Text("#detail-dialog", &detailText, chromedp.ByQuery),
+		chromedp.Click("#close-detail", chromedp.ByQuery),
 		chromedp.Text("#games", &museumText, chromedp.ByQuery),
 	); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(museumText, "The Legend of Zelda — Museum Edition") {
 		t.Fatal(fmt.Errorf("edited museum piece is not visible; collection contains %q", museumText))
+	}
+	if !strings.Contains(detailText, "An adventure preserved by the museum.") || !strings.Contains(detailText, "NES · 1986") {
+		t.Fatal(fmt.Errorf("museum detail is incomplete; popup contains %q", detailText))
 	}
 }
 
