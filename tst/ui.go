@@ -41,18 +41,19 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 		chromedp.Poll(`document.querySelector("#login-error").textContent.includes("invalid email or password")`, nil),
 		chromedp.SetValue("#login-password", credentials.Password, chromedp.ByQuery),
 		chromedp.Click("#login", chromedp.ByQuery),
-		chromedp.WaitVisible("#app-view", chromedp.ByQuery),
-		chromedp.SendKeys("#name", "Browser User", chromedp.ByQuery),
-		chromedp.SendKeys("#email", "browser@rapidou.test", chromedp.ByQuery),
-		chromedp.SendKeys("#password", "browser-password", chromedp.ByQuery),
+		chromedp.WaitVisible("#curator-view", chromedp.ByQuery),
+		chromedp.SendKeys("#title", "The Legend of Zelda", chromedp.ByQuery),
+		chromedp.SendKeys("#platform", "NES", chromedp.ByQuery),
+		chromedp.SendKeys("#release-year", "1986", chromedp.ByQuery),
+		chromedp.SendKeys("#description", "An adventure preserved by the museum.", chromedp.ByQuery),
 		chromedp.Click("#save", chromedp.ByQuery),
-		chromedp.Poll(`document.querySelector("#users").textContent.includes("Browser User")`, nil),
-		chromedp.Text("#users", &usersText, chromedp.ByQuery),
+		chromedp.Poll(`document.querySelector("#games").textContent.includes("The Legend of Zelda")`, nil),
+		chromedp.Text("#games", &usersText, chromedp.ByQuery),
 	); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(usersText, "Browser User") {
-		t.Fatal(fmt.Errorf("created user is not visible; users contain %q", usersText))
+	if !strings.Contains(usersText, "The Legend of Zelda") {
+		t.Fatal(fmt.Errorf("created museum piece is not visible; collection contains %q", usersText))
 	}
 }
 

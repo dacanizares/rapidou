@@ -1,5 +1,29 @@
 # rapidou
 
+Rapidou is a deliberately small Go application base. The included example is **Museo Pixel**, a public video game collection with authenticated curator tools, SQLite persistence, JWT/bcrypt authentication, an embedded plain-JavaScript frontend, and a portable functional harness.
+
+Run it locally:
+
+```sh
+./run/dev
+```
+
+Then open `http://localhost:8080` and sign in with the development account:
+
+```text
+admin@rapidou.test
+rapidou-local-password
+```
+
+Run the complete functional contract and build the single binary with:
+
+```sh
+./run/test
+./run/build
+```
+
+The browser flow runs when Chrome or Chromium is installed. API flows always run with `httptest`. Production startup requires an explicit `APP_JWT_SECRET`; the defaults above exist only in `run/dev`.
+
 Build this application with extreme simplicity as the primary architectural constraint.
 
 The application must remain plain, direct, small, and easy for both humans and machines to understand.

@@ -110,6 +110,10 @@ func (app *App) Handler() http.Handler {
 	mux.Handle("POST /api/users", app.authenticate(http.HandlerFunc(app.createUserHandler)))
 	mux.Handle("PUT /api/users/{id}", app.authenticate(http.HandlerFunc(app.updateUserHandler)))
 	mux.Handle("DELETE /api/users/{id}", app.authenticate(http.HandlerFunc(app.deleteUserHandler)))
+	mux.HandleFunc("GET /api/games", app.listGamesHandler)
+	mux.Handle("POST /api/games", app.authenticate(http.HandlerFunc(app.createGameHandler)))
+	mux.Handle("PUT /api/games/{id}", app.authenticate(http.HandlerFunc(app.updateGameHandler)))
+	mux.Handle("DELETE /api/games/{id}", app.authenticate(http.HandlerFunc(app.deleteGameHandler)))
 
 	assets, err := fs.Sub(webFiles, "web")
 	if err != nil {

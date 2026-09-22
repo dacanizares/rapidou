@@ -7,7 +7,8 @@ Rapidou owns only `src/functional_test.go`, which creates an isolated applicatio
 - never imports Rapidou internals;
 - never reads Rapidou's SQLite database;
 - exercises complete API requests with `httptest`;
-- exercises a complete browser flow with `chromedp`;
+- verifies authentication, user administration, and the public museum contract;
+- exercises login and museum cataloging in a real browser with `chromedp`;
 - travels with Rapidou and is pinned independently by the application's submodule pointer.
 
 Clone restoration will use:

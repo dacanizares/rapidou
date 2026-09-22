@@ -1,46 +1,65 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rapidou</title>
+    <title>Museo Pixel</title>
     <link rel="stylesheet" href="/assets/app.css">
 </head>
 <body>
-    <main class="shell">
+    <header class="museum-header">
+        <div class="header-content">
+            <p class="eyebrow">Archivo interactivo</p>
+            <h1>Museo Pixel</h1>
+            <p class="intro">Una colección pequeña de videojuegos, consolas y recuerdos que hicieron historia.</p>
+            <div class="session row">
+                <span id="current-user"></span>
+                <button class="btn hidden" id="logout" type="button">Cerrar sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="shell stack">
         <section class="card auth-card" id="login-view">
-            <p class="eyebrow">Rapidou</p>
-            <h1>Sign in</h1>
+            <div>
+                <p class="eyebrow">Acceso de curaduría</p>
+                <h2>Iniciar sesión</h2>
+            </div>
             <form class="stack" id="login-form">
-                <label>Email <input id="login-email" name="email" type="email" autocomplete="username" required></label>
-                <label>Password <input id="login-password" name="password" type="password" autocomplete="current-password" required></label>
+                <label>Correo <input id="login-email" name="email" type="email" autocomplete="username" required></label>
+                <label>Contraseña <input id="login-password" name="password" type="password" autocomplete="current-password" required></label>
                 <p class="message" id="login-error" role="alert"></p>
-                <button class="btn btn-primary" id="login" type="submit">Sign in</button>
+                <button class="btn btn-primary" id="login" type="submit">Entrar al archivo</button>
             </form>
         </section>
 
-        <section class="stack hidden" id="app-view">
-            <header class="row page-header">
-                <div><p class="eyebrow">Rapidou</p><h1>Users</h1></div>
-                <div class="row"><span id="current-user"></span><button class="btn" id="logout" type="button">Sign out</button></div>
-            </header>
-
-            <form class="card grid user-form" id="user-form">
-                <h2>New user</h2>
-                <label>Name <input id="name" name="name" autocomplete="name" required></label>
-                <label>Email <input id="email" name="email" type="email" autocomplete="email" required></label>
-                <label>Password <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required></label>
-                <p class="message" id="user-error" role="alert"></p>
-                <button class="btn btn-primary" id="save" type="submit">Create user</button>
+        <section class="card curator hidden" id="curator-view">
+            <div>
+                <p class="eyebrow">Mesa de catalogación</p>
+                <h2>Agregar pieza</h2>
+            </div>
+            <form class="grid game-form" id="game-form">
+                <label>Título <input id="title" name="title" required></label>
+                <label>Plataforma <input id="platform" name="platform" placeholder="Arcade, NES, PC…" required></label>
+                <label>Año <input id="release-year" name="release_year" type="number" min="1950" max="2100" required></label>
+                <label class="description-field">Historia de la pieza <textarea id="description" name="description" rows="3"></textarea></label>
+                <p class="message" id="game-error" role="alert"></p>
+                <button class="btn btn-primary" id="save" type="submit">Ingresar al museo</button>
             </form>
+        </section>
 
-            <section class="card section-users">
-                <h2>People</h2>
-                <div class="stack" id="users" aria-live="polite"></div>
-            </section>
+        <section class="collection-section">
+            <div class="collection-heading">
+                <div>
+                    <p class="eyebrow">Colección permanente</p>
+                    <h2>Galería de videojuegos</h2>
+                </div>
+                <span class="counter" id="game-count">0 piezas</span>
+            </div>
+            <p class="empty card" id="empty-collection">La colección está esperando su primera pieza.</p>
+            <div class="museum-grid" id="games" aria-live="polite"></div>
         </section>
     </main>
     <script src="/assets/app.js" defer></script>
 </body>
 </html>
-

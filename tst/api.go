@@ -11,6 +11,13 @@ type user struct {
 	Email string `json:"email"`
 }
 
+type game struct {
+	ID          int64  `json:"id"`
+	Title       string `json:"title"`
+	Platform    string `json:"platform"`
+	ReleaseYear int    `json:"release_year"`
+}
+
 // RunAPI executes the portable HTTP contract against a fresh app per flow.
 func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 	t.Helper()
@@ -77,5 +84,64 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 			"name": "Missing", "email": "missing@rapidou.test", "password": "",
 		}), http.StatusNotFound)
 		expectStatus(t, request(t, app, http.MethodDelete, "/api/users/1", token, nil), http.StatusConflict)
+	})
+
+	t.Run("museum piece lifecycle", func(t *testing.T) {
+		app, close := factory(t)
+		defer close()
+
+		listed := request(t, app, http.MethodGet, "/api/games", "", nil)
+		expectStatus(t, listed, http.StatusOK)
+		if games := decode[[]game](t, listed); len(games) != 0 {
+			t.Fatalf("expected an empty public museum, got %+v", games)
+		}
+
+		piece := map[string]any{
+			"title": "Super Mario Bros.", "platform": "NES", "release_year": 1985,
+			"description": "A defining side-scrolling platform game.",
+		}
+		expectStatus(t, request(t, app, http.MethodPost, "/api/games", "", piece), http.StatusUnauthorized)
+		token := login(t, app, credentials)
+
+		created := request(t, app, http.MethodPost, "/api/games", token, piece)
+		expectStatus(t, created, http.StatusCreated)
+		newGame := decode[game](t, created)
+		if newGame.ID == 0 || newGame.Title != "Super Mario Bros." {
+			t.Fatalf("unexpected museum piece: %+v", newGame)
+		}
+
+		updated := request(t, app, http.MethodPut, "/api/games/1", token, map[string]any{
+			"title": "Super Mario Bros.", "platform": "Nintendo Entertainment System", "release_year": 1985,
+			"description": "A defining side-scrolling platform game.",
+		})
+		expectStatus(t, updated, http.StatusOK)
+		if got := decode[game](t, updated).Platform; got != "Nintendo Entertainment System" {
+			t.Fatalf("expected updated platform, got %q", got)
+		}
+
+		listed = request(t, app, http.MethodGet, "/api/games", "", nil)
+		expectStatus(t, listed, http.StatusOK)
+		if games := decode[[]game](t, listed); len(games) != 1 {
+			t.Fatalf("expected one public museum piece, got %+v", games)
+		}
+
+		expectStatus(t, request(t, app, http.MethodDelete, "/api/games/1", token, nil), http.StatusNoContent)
+		expectStatus(t, request(t, app, http.MethodDelete, "/api/games/1", token, nil), http.StatusNotFound)
+	})
+
+	t.Run("museum piece validation", func(t *testing.T) {
+		app, close := factory(t)
+		defer close()
+		token := login(t, app, credentials)
+
+		expectStatus(t, request(t, app, http.MethodPost, "/api/games", token, map[string]any{
+			"title": "", "platform": "Arcade", "release_year": 1980, "description": "",
+		}), http.StatusBadRequest)
+		expectStatus(t, request(t, app, http.MethodPost, "/api/games", token, map[string]any{
+			"title": "Future artifact", "platform": "Unknown", "release_year": 2200, "description": "",
+		}), http.StatusBadRequest)
+		expectStatus(t, request(t, app, http.MethodPut, "/api/games/9999", token, map[string]any{
+			"title": "Missing", "platform": "Arcade", "release_year": 1980, "description": "",
+		}), http.StatusNotFound)
 	})
 }
