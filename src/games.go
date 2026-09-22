@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -14,6 +15,8 @@ type Game struct {
 	Platform    string      `json:"platform"`
 	ReleaseYear int         `json:"release_year"`
 	Description string      `json:"description"`
+	SteamURL    string      `json:"steam_url"`
+	GOGURL      string      `json:"gog_url"`
 	CreatedAt   string      `json:"created_at"`
 	Images      []GameImage `json:"images"`
 }
@@ -23,6 +26,8 @@ type gameInput struct {
 	Platform    string `json:"platform"`
 	ReleaseYear int    `json:"release_year"`
 	Description string `json:"description"`
+	SteamURL    string `json:"steam_url"`
+	GOGURL      string `json:"gog_url"`
 }
 
 func (app *App) listGamesHandler(w http.ResponseWriter, _ *http.Request) {
@@ -102,6 +107,8 @@ func normalizeGameInput(input *gameInput) {
 	input.Title = strings.TrimSpace(input.Title)
 	input.Platform = strings.TrimSpace(input.Platform)
 	input.Description = strings.TrimSpace(input.Description)
+	input.SteamURL = strings.TrimSpace(input.SteamURL)
+	input.GOGURL = strings.TrimSpace(input.GOGURL)
 }
 
 func validateGame(input gameInput) string {
@@ -114,15 +121,33 @@ func validateGame(input gameInput) string {
 	if input.ReleaseYear < 1950 || input.ReleaseYear > time.Now().Year()+1 {
 		return "release year is invalid"
 	}
+	if !validStoreURL(input.SteamURL, "store.steampowered.com") {
+		return "Steam URL must be an HTTPS Steam store URL"
+	}
+	if !validStoreURL(input.GOGURL, "gog.com") {
+		return "GOG URL must be an HTTPS GOG URL"
+	}
 	return ""
+}
+
+func validStoreURL(value, domain string) bool {
+	if value == "" {
+		return true
+	}
+	parsed, err := url.Parse(value)
+	if err != nil || parsed.Scheme != "https" {
+		return false
+	}
+	host := strings.ToLower(parsed.Hostname())
+	return host == domain || strings.HasSuffix(host, "."+domain)
 }
 
 func insertGame(db *sql.DB, input gameInput) (Game, error) {
 	createdAt := time.Now().UTC().Format(time.RFC3339)
 	result, err := db.Exec(`
-		INSERT INTO games (title, platform, release_year, description, created_at)
-		VALUES (?, ?, ?, ?, ?)
-	`, input.Title, input.Platform, input.ReleaseYear, input.Description, createdAt)
+		INSERT INTO games (title, platform, release_year, description, steam_url, gog_url, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	`, input.Title, input.Platform, input.ReleaseYear, input.Description, input.SteamURL, input.GOGURL, createdAt)
 	if err != nil {
 		return Game{}, err
 	}
@@ -130,13 +155,13 @@ func insertGame(db *sql.DB, input gameInput) (Game, error) {
 	if err != nil {
 		return Game{}, err
 	}
-	return Game{ID: id, Title: input.Title, Platform: input.Platform, ReleaseYear: input.ReleaseYear, Description: input.Description, CreatedAt: createdAt, Images: []GameImage{}}, nil
+	return Game{ID: id, Title: input.Title, Platform: input.Platform, ReleaseYear: input.ReleaseYear, Description: input.Description, SteamURL: input.SteamURL, GOGURL: input.GOGURL, CreatedAt: createdAt, Images: []GameImage{}}, nil
 }
 
 func updateGame(db *sql.DB, id int64, input gameInput) (Game, error) {
 	result, err := db.Exec(`
-		UPDATE games SET title = ?, platform = ?, release_year = ?, description = ? WHERE id = ?
-	`, input.Title, input.Platform, input.ReleaseYear, input.Description, id)
+		UPDATE games SET title = ?, platform = ?, release_year = ?, description = ?, steam_url = ?, gog_url = ? WHERE id = ?
+	`, input.Title, input.Platform, input.ReleaseYear, input.Description, input.SteamURL, input.GOGURL, id)
 	if err != nil {
 		return Game{}, err
 	}
@@ -150,8 +175,8 @@ func updateGame(db *sql.DB, id int64, input gameInput) (Game, error) {
 func gameByID(db *sql.DB, id int64) (Game, error) {
 	var game Game
 	err := db.QueryRow(`
-		SELECT id, title, platform, release_year, description, created_at FROM games WHERE id = ?
-	`, id).Scan(&game.ID, &game.Title, &game.Platform, &game.ReleaseYear, &game.Description, &game.CreatedAt)
+		SELECT id, title, platform, release_year, description, steam_url, gog_url, created_at FROM games WHERE id = ?
+	`, id).Scan(&game.ID, &game.Title, &game.Platform, &game.ReleaseYear, &game.Description, &game.SteamURL, &game.GOGURL, &game.CreatedAt)
 	if err != nil {
 		return Game{}, err
 	}
@@ -161,7 +186,7 @@ func gameByID(db *sql.DB, id int64) (Game, error) {
 
 func listGames(db *sql.DB) ([]Game, error) {
 	rows, err := db.Query(`
-		SELECT id, title, platform, release_year, description, created_at
+		SELECT id, title, platform, release_year, description, steam_url, gog_url, created_at
 		FROM games ORDER BY release_year, title
 	`)
 	if err != nil {
@@ -170,7 +195,7 @@ func listGames(db *sql.DB) ([]Game, error) {
 	games := []Game{}
 	for rows.Next() {
 		var game Game
-		if err := rows.Scan(&game.ID, &game.Title, &game.Platform, &game.ReleaseYear, &game.Description, &game.CreatedAt); err != nil {
+		if err := rows.Scan(&game.ID, &game.Title, &game.Platform, &game.ReleaseYear, &game.Description, &game.SteamURL, &game.GOGURL, &game.CreatedAt); err != nil {
 			return nil, err
 		}
 		games = append(games, game)

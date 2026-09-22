@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -24,6 +25,8 @@ CREATE TABLE IF NOT EXISTS games (
     platform TEXT NOT NULL,
     release_year INTEGER NOT NULL,
     description TEXT NOT NULL,
+    steam_url TEXT NOT NULL DEFAULT '',
+    gog_url TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
 );
 
@@ -50,5 +53,18 @@ func openDatabase(path string) (*sql.DB, error) {
 		db.Close()
 		return nil, fmt.Errorf("initialize database: %w", err)
 	}
+	for _, migration := range []string{
+		`ALTER TABLE games ADD COLUMN steam_url TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE games ADD COLUMN gog_url TEXT NOT NULL DEFAULT ''`,
+	} {
+		if _, err := db.Exec(migration); err != nil && !isDuplicateColumnError(err) {
+			db.Close()
+			return nil, fmt.Errorf("migrate database: %w", err)
+		}
+	}
 	return db, nil
+}
+
+func isDuplicateColumnError(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "duplicate column name")
 }

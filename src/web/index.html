@@ -14,6 +14,7 @@
             <p class="intro">Una colección pequeña de videojuegos, consolas y recuerdos que hicieron historia.</p>
             <div class="session row">
                 <span id="current-user"></span>
+                <button class="btn" id="open-login" type="button">Iniciar sesión</button>
                 <button class="btn hidden" id="new-game" type="button">Agregar pieza</button>
                 <button class="btn hidden" id="logout" type="button">Cerrar sesión</button>
             </div>
@@ -21,19 +22,6 @@
     </header>
 
     <main class="shell stack">
-        <section class="card auth-card" id="login-view">
-            <div>
-                <p class="eyebrow">Acceso de curaduría</p>
-                <h2>Iniciar sesión</h2>
-            </div>
-            <form class="stack" id="login-form">
-                <label>Correo <input id="login-email" name="email" type="email" autocomplete="username" required></label>
-                <label>Contraseña <input id="login-password" name="password" type="password" autocomplete="current-password" required></label>
-                <p class="message" id="login-error" role="alert"></p>
-                <button class="btn btn-primary" id="login" type="submit">Entrar al archivo</button>
-            </form>
-        </section>
-
         <section class="collection-section">
             <div class="collection-heading">
                 <div>
@@ -47,7 +35,25 @@
         </section>
     </main>
 
-    <dialog class="game-dialog" id="game-dialog">
+    <dialog class="popup-dialog login-dialog" id="login-dialog">
+        <div class="dialog-shell login-shell">
+            <header class="dialog-header">
+                <div>
+                    <p class="eyebrow">Acceso de curaduría</p>
+                    <h2>Iniciar sesión</h2>
+                </div>
+                <button class="dialog-close" id="close-login" type="button" aria-label="Cerrar">×</button>
+            </header>
+            <form class="stack" id="login-form">
+                <label>Correo <input id="login-email" name="email" type="email" autocomplete="username" required></label>
+                <label>Contraseña <input id="login-password" name="password" type="password" autocomplete="current-password" required></label>
+                <p class="message" id="login-error" role="alert"></p>
+                <button class="btn btn-primary" id="login" type="submit">Entrar al archivo</button>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog class="popup-dialog game-dialog" id="game-dialog">
         <div class="dialog-shell">
             <header class="dialog-header">
                 <div>
@@ -61,6 +67,8 @@
                 <label>Título <input id="title" name="title" required></label>
                 <label>Plataforma <input id="platform" name="platform" placeholder="Arcade, NES, PC…" required></label>
                 <label>Año <input id="release-year" name="release_year" type="number" min="1950" max="2100" required></label>
+                <label class="store-field">Steam <input id="steam-url" name="steam_url" type="url" placeholder="https://store.steampowered.com/app/…"></label>
+                <label class="store-field">GOG <input id="gog-url" name="gog_url" type="url" placeholder="https://www.gog.com/…"></label>
                 <label class="description-field">Historia de la pieza <textarea id="description" name="description" rows="4"></textarea></label>
                 <p class="message" id="game-error" role="alert"></p>
                 <div class="dialog-actions">

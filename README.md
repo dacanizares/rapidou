@@ -1,6 +1,6 @@
 # rapidou
 
-Rapidou is a deliberately small Go application base. The included example is **Museo Pixel**, a public video game collection with authenticated curator tools, responsive add/edit dialogs, URL and file images, SQLite persistence, JWT/bcrypt authentication, an embedded plain-JavaScript frontend, and a portable functional harness.
+Rapidou is a deliberately small Go application base. The included example is **Museo Pixel**, a public video game collection with Steam/GOG links, popup authentication, responsive add/edit dialogs, URL and file images, SQLite persistence, JWT/bcrypt authentication, an embedded plain-JavaScript frontend, and a portable functional harness.
 
 Run it locally:
 

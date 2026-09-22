@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS games (
     platform TEXT NOT NULL,
     release_year INTEGER NOT NULL,
     description TEXT NOT NULL,
+    steam_url TEXT NOT NULL DEFAULT '',
+    gog_url TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
 );
 

@@ -40,7 +40,9 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 	var museumText string
 	if err := chromedp.Run(ctx,
 		chromedp.Navigate(server.URL),
-		chromedp.WaitVisible("#login-view", chromedp.ByQuery),
+		chromedp.WaitVisible("#open-login", chromedp.ByQuery),
+		chromedp.Click("#open-login", chromedp.ByQuery),
+		chromedp.WaitVisible("#login-dialog", chromedp.ByQuery),
 		chromedp.SendKeys("#login-email", credentials.Email, chromedp.ByQuery),
 		chromedp.SendKeys("#login-password", "wrong-password", chromedp.ByQuery),
 		chromedp.Click("#login", chromedp.ByQuery),
@@ -54,6 +56,8 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 		chromedp.SendKeys("#platform", "NES", chromedp.ByQuery),
 		chromedp.SendKeys("#release-year", "1986", chromedp.ByQuery),
 		chromedp.SendKeys("#description", "An adventure preserved by the museum.", chromedp.ByQuery),
+		chromedp.SendKeys("#steam-url", "https://store.steampowered.com/app/123", chromedp.ByQuery),
+		chromedp.SendKeys("#gog-url", "https://www.gog.com/en/game/example", chromedp.ByQuery),
 		chromedp.Click("#save", chromedp.ByQuery),
 		chromedp.Poll(`document.querySelector("#games").textContent.includes("The Legend of Zelda")`, nil),
 		chromedp.WaitVisible("#image-manager", chromedp.ByQuery),
@@ -68,6 +72,7 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 		chromedp.Click("#save", chromedp.ByQuery),
 		chromedp.Poll(`document.querySelector("#games").textContent.includes("Museum Edition")`, nil),
 		chromedp.Click("#close-dialog", chromedp.ByQuery),
+		chromedp.Poll(`document.querySelectorAll("#games .store-link").length === 2`, nil),
 		chromedp.Text("#games", &museumText, chromedp.ByQuery),
 	); err != nil {
 		t.Fatal(err)

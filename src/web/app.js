@@ -11,9 +11,19 @@ async function api(path, options = {}) {
 }
 
 function showAuthenticated(authenticated) {
-    document.querySelector("#login-view").classList.toggle("hidden", authenticated);
+    document.querySelector("#open-login").classList.toggle("hidden", authenticated);
     document.querySelector("#new-game").classList.toggle("hidden", !authenticated);
     document.querySelector("#logout").classList.toggle("hidden", !authenticated);
+}
+
+function showPopup(dialog) {
+    dialog.showModal();
+    requestAnimationFrame(() => requestAnimationFrame(() => dialog.classList.add("is-visible")));
+}
+
+function closePopup(dialog) {
+    dialog.classList.remove("is-visible");
+    dialog.close();
 }
 
 function GameCard(game) {
@@ -59,6 +69,19 @@ function GameCard(game) {
     description.textContent = game.description || "Pieza sin descripción catalogada.";
 
     article.append(gallery, year, title, platform, description);
+    const stores = document.createElement("div");
+    stores.className = "store-links";
+    [["Steam", game.steam_url], ["GOG", game.gog_url]].forEach(([label, href]) => {
+        if (!href) return;
+        const link = document.createElement("a");
+        link.className = `store-link store-${label.toLowerCase()}`;
+        link.href = href;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = label;
+        stores.append(link);
+    });
+    if (stores.childElementCount > 0) article.append(stores);
     if (state.currentUser) {
         const actions = document.createElement("div");
         actions.className = "artifact-actions";
@@ -105,6 +128,7 @@ async function login(event) {
         document.querySelector("#current-user").textContent = `Curador: ${result.user.name}`;
         showAuthenticated(true);
         renderGames();
+        closePopup(document.querySelector("#login-dialog"));
     } catch (cause) {
         error.textContent = cause.message;
     }
@@ -117,7 +141,7 @@ function openNewGame() {
     document.querySelector("#save").textContent = "Crear pieza";
     document.querySelector("#game-error").textContent = "";
     document.querySelector("#image-manager").classList.add("hidden");
-    document.querySelector("#game-dialog").showModal();
+    showPopup(document.querySelector("#game-dialog"));
 }
 
 function openEditGame(game) {
@@ -127,17 +151,19 @@ function openEditGame(game) {
     form.elements.platform.value = game.platform;
     form.elements.release_year.value = game.release_year;
     form.elements.description.value = game.description;
+    form.elements.steam_url.value = game.steam_url || "";
+    form.elements.gog_url.value = game.gog_url || "";
     document.querySelector("#dialog-title").textContent = `Editar ${game.title}`;
     document.querySelector("#save").textContent = "Guardar cambios";
     document.querySelector("#game-error").textContent = "";
     document.querySelector("#image-error").textContent = "";
     document.querySelector("#image-manager").classList.remove("hidden");
     renderManagedImages(game);
-    document.querySelector("#game-dialog").showModal();
+    showPopup(document.querySelector("#game-dialog"));
 }
 
 function closeGameDialog() {
-    document.querySelector("#game-dialog").close();
+    closePopup(document.querySelector("#game-dialog"));
     state.editingGameID = null;
 }
 
@@ -150,7 +176,9 @@ async function saveGame(event) {
         title: form.elements.title.value,
         platform: form.elements.platform.value,
         release_year: Number(form.elements.release_year.value),
-        description: form.elements.description.value
+        description: form.elements.description.value,
+        steam_url: form.elements.steam_url.value,
+        gog_url: form.elements.gog_url.value
     };
     try {
         const creating = state.editingGameID === null;
@@ -278,9 +306,20 @@ async function start() {
     document.querySelector("#close-dialog").addEventListener("click", closeGameDialog);
     document.querySelector("#cancel-dialog").addEventListener("click", closeGameDialog);
     document.querySelector("#logout").addEventListener("click", logout);
+    document.querySelector("#open-login").addEventListener("click", () => {
+        document.querySelector("#login-error").textContent = "";
+        showPopup(document.querySelector("#login-dialog"));
+        document.querySelector("#login-email").focus();
+    });
+    document.querySelector("#close-login").addEventListener("click", () => closePopup(document.querySelector("#login-dialog")));
+    document.querySelector("#login-dialog").addEventListener("click", (event) => {
+        if (event.target === event.currentTarget) closePopup(event.currentTarget);
+    });
+    document.querySelector("#login-dialog").addEventListener("close", (event) => event.currentTarget.classList.remove("is-visible"));
     document.querySelector("#game-dialog").addEventListener("click", (event) => {
         if (event.target === event.currentTarget) closeGameDialog();
     });
+    document.querySelector("#game-dialog").addEventListener("close", (event) => event.currentTarget.classList.remove("is-visible"));
     await refreshGames();
     try {
         state.currentUser = await api("/api/me");

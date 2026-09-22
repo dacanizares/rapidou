@@ -18,6 +18,8 @@ type game struct {
 	Title       string `json:"title"`
 	Platform    string `json:"platform"`
 	ReleaseYear int    `json:"release_year"`
+	SteamURL    string `json:"steam_url"`
+	GOGURL      string `json:"gog_url"`
 	Images      []struct {
 		ID   int64  `json:"id"`
 		Src  string `json:"src"`
@@ -106,6 +108,7 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 		piece := map[string]any{
 			"title": "Super Mario Bros.", "platform": "NES", "release_year": 1985,
 			"description": "A defining side-scrolling platform game.",
+			"steam_url":   "https://store.steampowered.com/app/123", "gog_url": "https://www.gog.com/en/game/example",
 		}
 		expectStatus(t, request(t, app, http.MethodPost, "/api/games", "", piece), http.StatusUnauthorized)
 		token := login(t, app, credentials)
@@ -113,7 +116,7 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 		created := request(t, app, http.MethodPost, "/api/games", token, piece)
 		expectStatus(t, created, http.StatusCreated)
 		newGame := decode[game](t, created)
-		if newGame.ID == 0 || newGame.Title != "Super Mario Bros." {
+		if newGame.ID == 0 || newGame.Title != "Super Mario Bros." || newGame.SteamURL == "" || newGame.GOGURL == "" {
 			t.Fatalf("unexpected museum piece: %+v", newGame)
 		}
 
@@ -147,10 +150,11 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 		updated := request(t, app, http.MethodPut, "/api/games/1", token, map[string]any{
 			"title": "Super Mario Bros.", "platform": "Nintendo Entertainment System", "release_year": 1985,
 			"description": "A defining side-scrolling platform game.",
+			"steam_url":   "https://store.steampowered.com/app/456", "gog_url": "",
 		})
 		expectStatus(t, updated, http.StatusOK)
-		if got := decode[game](t, updated).Platform; got != "Nintendo Entertainment System" {
-			t.Fatalf("expected updated platform, got %q", got)
+		if got := decode[game](t, updated); got.Platform != "Nintendo Entertainment System" || got.SteamURL != "https://store.steampowered.com/app/456" || got.GOGURL != "" {
+			t.Fatalf("expected updated platform and store links, got %+v", got)
 		}
 
 		listed = request(t, app, http.MethodGet, "/api/games", "", nil)
@@ -177,6 +181,10 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 		}), http.StatusBadRequest)
 		expectStatus(t, request(t, app, http.MethodPost, "/api/games", token, map[string]any{
 			"title": "Future artifact", "platform": "Unknown", "release_year": 2200, "description": "",
+		}), http.StatusBadRequest)
+		expectStatus(t, request(t, app, http.MethodPost, "/api/games", token, map[string]any{
+			"title": "Bad store", "platform": "PC", "release_year": 2000, "description": "",
+			"steam_url": "https://example.com/not-steam", "gog_url": "http://gog.com/not-secure",
 		}), http.StatusBadRequest)
 		expectStatus(t, request(t, app, http.MethodPut, "/api/games/9999", token, map[string]any{
 			"title": "Missing", "platform": "Arcade", "release_year": 1980, "description": "",
@@ -206,6 +214,9 @@ func RunSampleMuseum(t *testing.T, factory Factory) {
 		t.Fatalf("expected six seeded museum pieces, got %d", len(games))
 	}
 	for _, game := range games {
+		if !strings.HasPrefix(game.SteamURL, "https://store.steampowered.com/app/") {
+			t.Fatalf("expected Steam seed URL for %s, got %q", game.Title, game.SteamURL)
+		}
 		if len(game.Images) != 2 {
 			t.Fatalf("expected two seed images for %s, got %+v", game.Title, game.Images)
 		}

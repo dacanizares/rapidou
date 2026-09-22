@@ -13,15 +13,16 @@ type sampleGame struct {
 	ReleaseYear int
 	Description string
 	SteamAppID  int
+	GOGURL      string
 }
 
 var sampleMuseum = []sampleGame{
-	{Title: "Commander Keen 4", Platform: "MS-DOS", ReleaseYear: 1991, Description: "Mi referencia personal más alta entre los plataformeros.", SteamAppID: 9180},
-	{Title: "Doom", Platform: "MS-DOS", ReleaseYear: 1993, Description: "Una experiencia excelente y favorita personal.", SteamAppID: 2280},
-	{Title: "Quake", Platform: "PC", ReleaseYear: 1996, Description: "Un clásico de acción que sigue siendo una experiencia favorita.", SteamAppID: 2310},
+	{Title: "Commander Keen 4", Platform: "MS-DOS", ReleaseYear: 1991, Description: "Mi referencia personal más alta entre los plataformeros.", SteamAppID: 9180, GOGURL: "https://www.gog.com/en/game/commander_keen_complete_pack"},
+	{Title: "Doom", Platform: "MS-DOS", ReleaseYear: 1993, Description: "Una experiencia excelente y favorita personal.", SteamAppID: 2280, GOGURL: "https://www.gog.com/en/game/doom_doom_ii"},
+	{Title: "Quake", Platform: "PC", ReleaseYear: 1996, Description: "Un clásico de acción que sigue siendo una experiencia favorita.", SteamAppID: 2310, GOGURL: "https://www.gog.com/en/game/quake_the_offering"},
 	{Title: "Half-Life", Platform: "PC", ReleaseYear: 1998, Description: "Una experiencia narrativa y de acción valorada con 10/10.", SteamAppID: 70},
 	{Title: "Portal", Platform: "PC", ReleaseYear: 2007, Description: "Breve y ligero, incluso donde todavía no alcanza el pulido de su secuela.", SteamAppID: 400},
-	{Title: "Machinarium", Platform: "PC", ReleaseYear: 2009, Description: "Un conjunto exquisito de música, sonidos y narrativa sin diálogos.", SteamAppID: 40700},
+	{Title: "Machinarium", Platform: "PC", ReleaseYear: 2009, Description: "Un conjunto exquisito de música, sonidos y narrativa sin diálogos.", SteamAppID: 40700, GOGURL: "https://www.gog.com/en/game/machinarium_collectors_edition"},
 }
 
 func ensureSampleMuseum(db *sql.DB) error {
@@ -33,19 +34,23 @@ func ensureSampleMuseum(db *sql.DB) error {
 	createdAt := time.Now().UTC().Format(time.RFC3339)
 
 	for _, sample := range sampleMuseum {
+		steamURL := fmt.Sprintf("https://store.steampowered.com/app/%d", sample.SteamAppID)
 		var gameID int64
 		err := tx.QueryRow(`SELECT id FROM games WHERE title = ? AND platform = ? LIMIT 1`, sample.Title, sample.Platform).Scan(&gameID)
 		if errors.Is(err, sql.ErrNoRows) {
 			result, insertErr := tx.Exec(`
-				INSERT INTO games (title, platform, release_year, description, created_at)
-				VALUES (?, ?, ?, ?, ?)
-			`, sample.Title, sample.Platform, sample.ReleaseYear, sample.Description, createdAt)
+				INSERT INTO games (title, platform, release_year, description, steam_url, gog_url, created_at)
+				VALUES (?, ?, ?, ?, ?, ?, ?)
+			`, sample.Title, sample.Platform, sample.ReleaseYear, sample.Description, steamURL, sample.GOGURL, createdAt)
 			if insertErr != nil {
 				return insertErr
 			}
 			gameID, err = result.LastInsertId()
 		}
 		if err != nil {
+			return err
+		}
+		if _, err := tx.Exec(`UPDATE games SET steam_url = ?, gog_url = ? WHERE id = ?`, steamURL, sample.GOGURL, gameID); err != nil {
 			return err
 		}
 

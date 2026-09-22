@@ -26,6 +26,13 @@ INSERT INTO games (title, platform, release_year, description, created_at)
 SELECT 'Machinarium', 'PC', 2009, 'Un conjunto exquisito de música, sonidos y narrativa sin diálogos.', CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1 FROM games WHERE title = 'Machinarium' AND platform = 'PC');
 
+UPDATE games SET steam_url = 'https://store.steampowered.com/app/9180', gog_url = 'https://www.gog.com/en/game/commander_keen_complete_pack' WHERE title = 'Commander Keen 4' AND platform = 'MS-DOS';
+UPDATE games SET steam_url = 'https://store.steampowered.com/app/2280', gog_url = 'https://www.gog.com/en/game/doom_doom_ii' WHERE title = 'Doom' AND platform = 'MS-DOS';
+UPDATE games SET steam_url = 'https://store.steampowered.com/app/2310', gog_url = 'https://www.gog.com/en/game/quake_the_offering' WHERE title = 'Quake' AND platform = 'PC';
+UPDATE games SET steam_url = 'https://store.steampowered.com/app/70', gog_url = '' WHERE title = 'Half-Life' AND platform = 'PC';
+UPDATE games SET steam_url = 'https://store.steampowered.com/app/400', gog_url = '' WHERE title = 'Portal' AND platform = 'PC';
+UPDATE games SET steam_url = 'https://store.steampowered.com/app/40700', gog_url = 'https://www.gog.com/en/game/machinarium_collectors_edition' WHERE title = 'Machinarium' AND platform = 'PC';
+
 INSERT OR IGNORE INTO game_images (game_id, url, alt_text, created_at)
 SELECT id, 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/9180/header.jpg', 'Commander Keen 4 — imagen 1', CURRENT_TIMESTAMP FROM games WHERE title = 'Commander Keen 4' AND platform = 'MS-DOS';
 INSERT OR IGNORE INTO game_images (game_id, url, alt_text, created_at)
