@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+docker build -t rapidou .
+docker run --rm -p 8080:8080 \
+    -e APP_JWT_SECRET="${APP_JWT_SECRET:?set APP_JWT_SECRET}" \
+    -e APP_ADMIN_EMAIL="${APP_ADMIN_EMAIL:-}" \
+    -e APP_ADMIN_PASSWORD="${APP_ADMIN_PASSWORD:-}" \
+    -v "$(pwd)/data:/data" \
+    rapidou
+

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${APP_JWT_SECRET:=rapidou-local-secret-change-before-production}"
+: "${APP_ADMIN_EMAIL:=admin@rapidou.test}"
+: "${APP_ADMIN_PASSWORD:=rapidou-local-password}"
+
+export APP_JWT_SECRET APP_ADMIN_EMAIL APP_ADMIN_PASSWORD
+exec go run ./src
+

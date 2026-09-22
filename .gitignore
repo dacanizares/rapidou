@@ -1,0 +1,6 @@
+/bin/*
+!/bin/.gitkeep
+/data/*.db
+/data/*.db-*
+/tmp/
+
