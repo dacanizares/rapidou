@@ -1,7 +1,9 @@
 package tst
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -16,6 +18,10 @@ type game struct {
 	Title       string `json:"title"`
 	Platform    string `json:"platform"`
 	ReleaseYear int    `json:"release_year"`
+	Images      []struct {
+		ID  int64  `json:"id"`
+		Src string `json:"src"`
+	} `json:"images"`
 }
 
 // RunAPI executes the portable HTTP contract against a fresh app per flow.
@@ -110,6 +116,22 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 			t.Fatalf("unexpected museum piece: %+v", newGame)
 		}
 
+		imageData := []byte{0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n', 0, 0, 0, 0}
+		uploaded := uploadImage(t, app, fmt.Sprintf("/api/games/%d/images", newGame.ID), token, "museum.png", imageData)
+		expectStatus(t, uploaded, http.StatusCreated)
+		image := decode[struct {
+			ID  int64  `json:"id"`
+			Src string `json:"src"`
+		}](t, uploaded)
+		if image.ID == 0 || image.Src == "" {
+			t.Fatalf("unexpected uploaded image: %+v", image)
+		}
+		served := request(t, app, http.MethodGet, image.Src, "", nil)
+		expectStatus(t, served, http.StatusOK)
+		if served.Header.Get("Content-Type") != "image/png" {
+			t.Fatalf("expected uploaded PNG, got %q", served.Header.Get("Content-Type"))
+		}
+
 		updated := request(t, app, http.MethodPut, "/api/games/1", token, map[string]any{
 			"title": "Super Mario Bros.", "platform": "Nintendo Entertainment System", "release_year": 1985,
 			"description": "A defining side-scrolling platform game.",
@@ -123,7 +145,10 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 		expectStatus(t, listed, http.StatusOK)
 		if games := decode[[]game](t, listed); len(games) != 1 {
 			t.Fatalf("expected one public museum piece, got %+v", games)
+		} else if len(games[0].Images) != 1 {
+			t.Fatalf("expected uploaded image in public museum, got %+v", games[0].Images)
 		}
+		expectStatus(t, request(t, app, http.MethodDelete, fmt.Sprintf("/api/game-images/%d", image.ID), token, nil), http.StatusNoContent)
 
 		expectStatus(t, request(t, app, http.MethodDelete, "/api/games/1", token, nil), http.StatusNoContent)
 		expectStatus(t, request(t, app, http.MethodDelete, "/api/games/1", token, nil), http.StatusNotFound)
@@ -143,5 +168,35 @@ func RunAPI(t *testing.T, factory Factory, credentials Credentials) {
 		expectStatus(t, request(t, app, http.MethodPut, "/api/games/9999", token, map[string]any{
 			"title": "Missing", "platform": "Arcade", "release_year": 1980, "description": "",
 		}), http.StatusNotFound)
+		expectStatus(t, uploadImage(t, app, "/api/games/9999/images", token, "note.txt", []byte("not an image")), http.StatusNotFound)
+		created := request(t, app, http.MethodPost, "/api/games", token, map[string]any{
+			"title": "Image test", "platform": "PC", "release_year": 2000, "description": "",
+		})
+		expectStatus(t, created, http.StatusCreated)
+		game := decode[game](t, created)
+		expectStatus(t, uploadImage(t, app, fmt.Sprintf("/api/games/%d/images", game.ID), token, "note.txt", []byte("not an image")), http.StatusBadRequest)
 	})
+}
+
+// RunSampleMuseum verifies the development seed through the public API.
+func RunSampleMuseum(t *testing.T, factory Factory) {
+	t.Helper()
+	app, close := factory(t)
+	defer close()
+	listed := request(t, app, http.MethodGet, "/api/games", "", nil)
+	expectStatus(t, listed, http.StatusOK)
+	games := decode[[]game](t, listed)
+	if len(games) != 6 {
+		t.Fatalf("expected six seeded museum pieces, got %d", len(games))
+	}
+	for _, game := range games {
+		if len(game.Images) != 2 {
+			t.Fatalf("expected two seed images for %s, got %+v", game.Title, game.Images)
+		}
+		for _, image := range game.Images {
+			if !strings.HasPrefix(image.Src, "https://") {
+				t.Fatalf("expected remote HTTPS seed image for %s, got %q", game.Title, image.Src)
+			}
+		}
+	}
 }

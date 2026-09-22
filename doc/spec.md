@@ -11,6 +11,9 @@ Rapidou includes a small video game museum as its complete example application.
 - Anyone can browse the museum collection.
 - An authenticated curator can add, edit, and remove museum pieces.
 - Each piece has a title, platform, release year, and optional description.
+- Each piece may have multiple JPEG, PNG, GIF, or WebP images.
+- Curators can upload images up to 5 MB; uploaded files are stored in SQLite.
+- The development sample contains six favorites from the referenced positive-games collection and two remote image URLs per game.
 - Release years before 1950 or beyond next year are rejected.
 - The frontend is embedded in the executable and uses plain HTML, CSS, and JavaScript.
 

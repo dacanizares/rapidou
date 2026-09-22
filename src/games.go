@@ -9,12 +9,13 @@ import (
 )
 
 type Game struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Platform    string `json:"platform"`
-	ReleaseYear int    `json:"release_year"`
-	Description string `json:"description"`
-	CreatedAt   string `json:"created_at"`
+	ID          int64       `json:"id"`
+	Title       string      `json:"title"`
+	Platform    string      `json:"platform"`
+	ReleaseYear int         `json:"release_year"`
+	Description string      `json:"description"`
+	CreatedAt   string      `json:"created_at"`
+	Images      []GameImage `json:"images"`
 }
 
 type gameInput struct {
@@ -129,7 +130,7 @@ func insertGame(db *sql.DB, input gameInput) (Game, error) {
 	if err != nil {
 		return Game{}, err
 	}
-	return Game{ID: id, Title: input.Title, Platform: input.Platform, ReleaseYear: input.ReleaseYear, Description: input.Description, CreatedAt: createdAt}, nil
+	return Game{ID: id, Title: input.Title, Platform: input.Platform, ReleaseYear: input.ReleaseYear, Description: input.Description, CreatedAt: createdAt, Images: []GameImage{}}, nil
 }
 
 func updateGame(db *sql.DB, id int64, input gameInput) (Game, error) {
@@ -151,6 +152,10 @@ func gameByID(db *sql.DB, id int64) (Game, error) {
 	err := db.QueryRow(`
 		SELECT id, title, platform, release_year, description, created_at FROM games WHERE id = ?
 	`, id).Scan(&game.ID, &game.Title, &game.Platform, &game.ReleaseYear, &game.Description, &game.CreatedAt)
+	if err != nil {
+		return Game{}, err
+	}
+	game.Images, err = imagesByGameID(db, game.ID)
 	return game, err
 }
 
@@ -162,7 +167,6 @@ func listGames(db *sql.DB) ([]Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 	games := []Game{}
 	for rows.Next() {
 		var game Game
@@ -171,5 +175,18 @@ func listGames(db *sql.DB) ([]Game, error) {
 		}
 		games = append(games, game)
 	}
-	return games, rows.Err()
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	for index := range games {
+		games[index].Images, err = imagesByGameID(db, games[index].ID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return games, nil
 }

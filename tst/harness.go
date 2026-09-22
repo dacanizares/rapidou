@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -81,4 +82,35 @@ func login(t *testing.T, app http.Handler, credentials Credentials) string {
 		t.Fatal("login response contains no token")
 	}
 	return value.Token
+}
+
+func uploadImage(t *testing.T, app http.Handler, path, token, filename string, data []byte) response {
+	t.Helper()
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	part, err := writer.CreateFormFile("image", filename)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := part.Write(data); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.WriteField("alt", "Uploaded museum image"); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	req := httptest.NewRequest(http.MethodPost, path, &body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Authorization", "Bearer "+token)
+	recorder := httptest.NewRecorder()
+	app.ServeHTTP(recorder, req)
+	result := recorder.Result()
+	defer result.Body.Close()
+	responseBody, err := io.ReadAll(result.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return response{Status: result.StatusCode, Header: result.Header, Body: responseBody}
 }

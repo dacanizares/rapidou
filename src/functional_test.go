@@ -36,3 +36,19 @@ func TestUI(t *testing.T) {
 		return app.Handler(), close
 	}, tst.Credentials{Email: testAdminEmail, Password: testAdminPassword})
 }
+
+func TestSampleMuseum(t *testing.T) {
+	tst.RunSampleMuseum(t, func(t *testing.T) (tst.Application, func()) {
+		app, err := newApp(Config{
+			DatabasePath:  t.TempDir() + "/rapidou.db",
+			JWTSecret:     "test-secret-that-never-leaves-the-test",
+			AdminEmail:    testAdminEmail,
+			AdminPassword: testAdminPassword,
+			SeedSample:    true,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return app.Handler(), func() { app.Close() }
+	})
+}

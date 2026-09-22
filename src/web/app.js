@@ -20,6 +20,23 @@ function GameCard(game) {
     const article = document.createElement("article");
     article.className = "artifact card";
 
+    const gallery = document.createElement("div");
+    gallery.className = "artifact-gallery";
+    if (game.images.length === 0) {
+        const placeholder = document.createElement("div");
+        placeholder.className = "artifact-placeholder";
+        placeholder.textContent = "Sin imagen";
+        gallery.append(placeholder);
+    } else {
+        gallery.append(...game.images.map((image) => {
+            const element = document.createElement("img");
+            element.src = image.src;
+            element.alt = image.alt;
+            element.loading = "lazy";
+            return element;
+        }));
+    }
+
     const year = document.createElement("span");
     year.className = "artifact-year";
     year.textContent = game.release_year;
@@ -35,14 +52,31 @@ function GameCard(game) {
     description.className = "artifact-description";
     description.textContent = game.description || "Pieza sin descripción catalogada.";
 
-    article.append(year, title, platform, description);
+    article.append(gallery, year, title, platform, description);
     if (state.currentUser) {
+        const upload = document.createElement("form");
+        upload.className = "image-upload";
+        const input = document.createElement("input");
+        input.type = "file";
+        input.name = "image";
+        input.accept = "image/jpeg,image/png,image/gif,image/webp";
+        input.required = true;
+        input.setAttribute("aria-label", `Imagen para ${game.title}`);
+        const uploadButton = document.createElement("button");
+        uploadButton.className = "btn";
+        uploadButton.type = "submit";
+        uploadButton.textContent = "Subir imagen";
+        const uploadMessage = document.createElement("span");
+        uploadMessage.className = "upload-message";
+        upload.addEventListener("submit", (event) => uploadGameImage(game, event, uploadMessage));
+        upload.append(input, uploadButton, uploadMessage);
+
         const remove = document.createElement("button");
         remove.className = "btn btn-danger";
         remove.type = "button";
         remove.textContent = "Retirar pieza";
         remove.addEventListener("click", () => deleteGame(game));
-        article.append(remove);
+        article.append(upload, remove);
     }
     return article;
 }
@@ -105,6 +139,23 @@ async function deleteGame(game) {
     if (!window.confirm(`¿Retirar ${game.title} de la colección?`)) return;
     await api(`/api/games/${game.id}`, { method: "DELETE" });
     await refreshGames();
+}
+
+async function uploadGameImage(game, event, message) {
+    event.preventDefault();
+    message.textContent = "";
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    data.set("alt", game.title);
+    try {
+        const response = await fetch(`/api/games/${game.id}/images`, { method: "POST", body: data });
+        const body = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(body?.error || "No se pudo subir la imagen");
+        form.reset();
+        await refreshGames();
+    } catch (cause) {
+        message.textContent = cause.message;
+    }
 }
 
 async function logout() {

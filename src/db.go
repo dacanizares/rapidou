@@ -26,6 +26,18 @@ CREATE TABLE IF NOT EXISTS games (
     description TEXT NOT NULL,
     created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS game_images (
+    id INTEGER PRIMARY KEY,
+    game_id INTEGER NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+    url TEXT,
+    mime_type TEXT,
+    image_data BLOB,
+    alt_text TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE (game_id, url),
+    CHECK ((url IS NOT NULL AND image_data IS NULL) OR (url IS NULL AND image_data IS NOT NULL))
+);
 `
 
 func openDatabase(path string) (*sql.DB, error) {

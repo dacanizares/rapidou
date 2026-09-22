@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http/httptest"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -30,6 +32,10 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 	defer cancel()
 	ctx, timeout := context.WithTimeout(ctx, 20*time.Second)
 	defer timeout()
+	uploadPath := filepath.Join(t.TempDir(), "museum.png")
+	if err := os.WriteFile(uploadPath, []byte{0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n', 0, 0, 0, 0}, 0o600); err != nil {
+		t.Fatal(err)
+	}
 
 	var usersText string
 	if err := chromedp.Run(ctx,
@@ -48,6 +54,9 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 		chromedp.SendKeys("#description", "An adventure preserved by the museum.", chromedp.ByQuery),
 		chromedp.Click("#save", chromedp.ByQuery),
 		chromedp.Poll(`document.querySelector("#games").textContent.includes("The Legend of Zelda")`, nil),
+		chromedp.SetUploadFiles(".image-upload input", []string{uploadPath}, chromedp.ByQuery),
+		chromedp.Click(".image-upload .btn", chromedp.ByQuery),
+		chromedp.Poll(`document.querySelector("#games img[src*='/api/game-images/']") !== null`, nil),
 		chromedp.Text("#games", &usersText, chromedp.ByQuery),
 	); err != nil {
 		t.Fatal(err)

@@ -23,6 +23,7 @@ type Config struct {
 	CookieSecure  bool
 	AdminEmail    string
 	AdminPassword string
+	SeedSample    bool
 }
 
 type App struct {
@@ -39,6 +40,7 @@ func main() {
 		CookieSecure:  strings.EqualFold(os.Getenv("APP_COOKIE_SECURE"), "true"),
 		AdminEmail:    os.Getenv("APP_ADMIN_EMAIL"),
 		AdminPassword: os.Getenv("APP_ADMIN_PASSWORD"),
+		SeedSample:    strings.EqualFold(os.Getenv("APP_SEED_SAMPLE"), "true"),
 	}
 
 	if config.JWTSecret == "" {
@@ -93,6 +95,12 @@ func newApp(config Config) (*App, error) {
 			return nil, fmt.Errorf("create initial user: %w", err)
 		}
 	}
+	if config.SeedSample {
+		if err := ensureSampleMuseum(db); err != nil {
+			db.Close()
+			return nil, fmt.Errorf("seed sample museum: %w", err)
+		}
+	}
 	return app, nil
 }
 
@@ -114,6 +122,9 @@ func (app *App) Handler() http.Handler {
 	mux.Handle("POST /api/games", app.authenticate(http.HandlerFunc(app.createGameHandler)))
 	mux.Handle("PUT /api/games/{id}", app.authenticate(http.HandlerFunc(app.updateGameHandler)))
 	mux.Handle("DELETE /api/games/{id}", app.authenticate(http.HandlerFunc(app.deleteGameHandler)))
+	mux.Handle("POST /api/games/{id}/images", app.authenticate(http.HandlerFunc(app.uploadGameImageHandler)))
+	mux.HandleFunc("GET /api/game-images/{id}", app.gameImageHandler)
+	mux.Handle("DELETE /api/game-images/{id}", app.authenticate(http.HandlerFunc(app.deleteGameImageHandler)))
 
 	assets, err := fs.Sub(webFiles, "web")
 	if err != nil {
