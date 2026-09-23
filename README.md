@@ -1,358 +1,55 @@
-# rapidou
+# Rapidou
 
-Rapidou is a deliberately small Go application base. The included example is **Museo Pixel**, a public video game collection with clickable detail views, Steam/GOG links, popup authentication, responsive add/edit dialogs, URL and file images, SQLite persistence, JWT/bcrypt authentication, an embedded plain-JavaScript frontend, and a portable functional harness.
+Rapidou is a deliberately small foundation for building **Any Application™*** with Codex or Claude. It combines an opinionated Go/SQLite/plain-JavaScript base, authentication, a real Docker/Chromium functional harness, concise specifications, and reusable agent skills.
 
-Run it locally:
+It is installed inside an application repository as `lib/rapidou`. The AI uses its example, rules, skills, and tests to implement the requested product in the parent repository.
+
+> *Any small web application that benefits from a direct, single-binary architecture. Rapidou deliberately chooses clarity over universal framework support.
+
+## Create an application
+
+From the new application repository:
+
+```sh
+git submodule add <rapidou-repository-url> lib/rapidou
+./lib/rapidou/run/install
+```
+
+Restart Codex or Claude. In Codex, open `/hooks` once and trust the project hook. Then ask the agent:
+
+```text
+Use Rapidou's craft skill to build <describe the application>.
+Use lib/rapidou/src as the base example and keep the application simple.
+```
+
+Rapidou does not blindly copy `src/`: the agent adapts the working example to the specification, writes the functional contract, implements the application, drives it through Chromium, reviews it independently, and runs the final test again.
+
+After cloning an existing application:
+
+```sh
+git submodule update --init --recursive
+./lib/rapidou/run/install
+./run/test
+```
+
+See [installation](docs/installation.md) for existing hook configurations and repository setup.
+
+## Explore Rapidou
+
+The included [Museo Pixel example](docs/example.md) demonstrates authentication, persistence, image uploads, responsive dialogs, external store links, and complete API/browser journeys:
 
 ```sh
 ./run/dev
-```
-
-Then open `http://localhost:8080` and sign in with the development account:
-
-```text
-admin@rapidou.test
-rapidou-local-password
-```
-
-Run the complete functional contract and build the single binary with:
-
-```sh
 ./run/test
-./run/build
 ```
 
-`./run/test` is the mandatory completion gate. It builds the Dockerfile `functional-test` target with Chromium and executes both the API contract and the complete click-driven browser journey; a skipped UI test is a failure, not an acceptable result. Docker is selected first and Podman is supported as a Docker-compatible fallback. Production startup requires an explicit `APP_JWT_SECRET`; the defaults above exist only in `run/dev`.
-
-Project documentation is routed through [`docs/index.md`](docs/index.md). Reusable agent workflows live under [`ai/skills/`](ai/skills/index.md); `craft` drives a request from spec through two functional-test gates. Every independent agent must first use `select-agent-model` and the delegation hook described in `AGENTS.md`.
-
-To consume Rapidou as a Git submodule at `lib/rapidou`, run `./lib/rapidou/run/install`. It installs the same canonical skills and one-shot delegation guard for both Codex and Claude without copying them. See the concise [installation guide](docs/installation.md). This repository's `src/` is the working base example; a consuming application owns its adapted source and functional-test bridge.
-
-Build this application with extreme simplicity as the primary architectural constraint.
-
-The application must remain plain, direct, small, and easy for both humans and machines to understand.
-
-Use:
-
-* Go.
-* Go standard library whenever practical.
-* `net/http` for HTTP and routing.
-* `database/sql`.
-* SQLite.
-* JWT authentication.
-* bcrypt for passwords.
-* HTML, CSS, and plain JavaScript.
-* No Node.js.
-* No npm.
-* No frontend build system.
-* No frontend framework.
-* `testing` and `httptest` for API tests.
-* `chromedp` for browser/UI functional tests.
-* Docker with Ubuntu support.
-* Embed the frontend into the Go executable.
-* Produce a single runnable application binary.
-
-## Core architecture
-
-The application should be built almost entirely from:
-
-* structs,
-* functions,
-* direct function calls,
-* plain data,
-* simple control flow,
-* simple composition of functions.
-
-Avoid architectural patterns unless a concrete problem requires them.
-
-Do not introduce layers such as:
-
-* services,
-* repositories,
-* use cases,
-* adapters,
-* ports,
-* factories,
-* controllers as a separate abstraction,
-* dependency injection frameworks,
-* domain layers,
-* generic abstraction layers.
-
-Database access functions may be grouped together for organization.
-
-Endpoint handlers should call those functions directly.
-
-Example:
-
-```go
-func createUserHandler(w http.ResponseWriter, r *http.Request) {
-    input := readInput(r)
-
-    user, err := createUser(db, input)
-
-    if err != nil {
-        writeError(w, err)
-        return
-    }
-
-    writeJSON(w, http.StatusCreated, user)
-}
-```
-
-If there are two ways to perform something, prefer simple control flow:
-
-```go
-if condition {
-    result = functionA()
-} else {
-    result = functionB()
-}
-```
-
-Do not create an interface, strategy pattern, factory, registry, provider, or abstraction merely to represent this choice.
-
-## Functions first
-
-Functions are the main unit of behavior.
-
-Structs are the main unit of data.
-
-Prefer plain function composition:
-
-```text
-HTTP request
-→ handler function
-→ validation function
-→ database function
-→ response function
-```
-
-A function calling another function directly is good architecture.
-
-Do not hide simple behavior behind unnecessary abstractions.
-
-## Frontend
-
-Use plain browser APIs.
-
-State can be a plain object:
-
-```js
-const state = {
-    users: [],
-    currentUser: null
-};
-```
-
-API calls are plain async functions.
-
-Rendering is done by functions.
-
-Render only what changed when practical.
-
-Example:
-
-```js
-async function refreshUsers() {
-    state.users = await api("/api/users");
-    renderUsers("#users");
-}
-```
-
-Prefer:
-
-```js
-renderUsers()
-renderSettings()
-renderNavigation()
-showDialog()
-hideDialog()
-```
-
-over introducing a rendering framework or component system.
-
-UI elements may simply be functions returning DOM elements.
-
-Use:
-
-* `fetch`
-* `querySelector`
-* `createElement`
-* `replaceChildren`
-* `addEventListener`
-* browser history APIs when routing is needed.
-
-No virtual DOM.
-
-No JSX.
-
-No reactive framework.
-
-No state-management library.
-
-No frontend dependency unless there is a concrete feature that cannot reasonably be implemented with browser APIs.
-
-## Backend
-
-Prefer the Go standard library.
-
-Use `http.ServeMux`.
-
-Use normal handlers:
-
-```go
-mux.HandleFunc("GET /api/users", auth(listUsers))
-mux.HandleFunc("POST /api/users", auth(createUser))
-```
-
-Use small helpers where useful:
-
-```go
-readJSON()
-writeJSON()
-writeError()
-authenticate()
-```
-
-Keep helpers obvious and concrete.
-
-Do not build an internal framework.
-
-## Authentication
-
-Use JWT.
-
-Prefer an HttpOnly, Secure, SameSite cookie for browser authentication.
-
-The API may additionally support:
-
-```text
-Authorization: Bearer <token>
-```
-
-Keep authentication logic centralized in a few simple functions.
-
-Do not create an authentication framework.
-
-## Database
-
-Use SQLite through `database/sql`.
-
-Write SQL directly.
-
-Prefer functions such as:
-
-```go
-userByID()
-userByEmail()
-insertUser()
-updateUser()
-deleteUser()
-listUsers()
-```
-
-Do not use an ORM unless a concrete requirement later proves that raw SQL is insufficient.
-
-## Testing
-
-Tests must also follow the same philosophy.
-
-API functional tests should be simple Go functions using `httptest`.
-
-Create small helpers such as:
-
-```go
-get()
-postJSON()
-login()
-expectStatus()
-expectJSON()
-```
-
-UI tests should use `chromedp`.
-
-Build simple browser helpers such as:
-
-```go
-open()
-click()
-typeText()
-waitVisible()
-waitText()
-expectText()
-eventually()
-```
-
-Tests should read like sequences of actions.
-
-Example:
-
-```go
-func TestCreateUserUI(t *testing.T) {
-    open(ctx, "/users")
-    click(ctx, "#new-user")
-    typeText(ctx, "#name", "Daniel")
-    click(ctx, "#save")
-    expectText(ctx, "#users", "Daniel")
-}
-```
-
-Avoid testing frameworks, DSLs, page-object architectures, BDD systems, or test abstraction layers unless they become genuinely necessary.
-
-## Project organization
-
-Start small.
-
-Prefer something close to:
-
-```text
-main.go
-auth.go
-db.go
-users.go
-main_test.go
-ui_test.go
-
-web/
-    index.html
-    app.js
-    app.css
-
-schema.sql
-go.mod
-Dockerfile
-```
-
-All Go application files may remain in `package main`.
-
-Do not split the application into packages merely for architectural appearance.
-
-Split files only when it improves navigation.
-
-## Decision rule
-
-When implementing something, choose the simplest design that works correctly.
-
-The code should be obvious enough that a machine can understand the flow without reconstructing hidden architectural conventions.
-
-Prefer explicit code over implicit behavior.
-
-Prefer direct calls over indirection.
-
-Prefer concrete code over generic infrastructure.
-
-Prefer browser and language primitives over frameworks.
-
-Prefer a small amount of boring code over a sophisticated abstraction.
-
-Do not solve hypothetical future problems.
-
-Do not add infrastructure for possible future requirements.
-
-Implement the feature that exists now.
-
-The target is not minimal code at any cost.
-
-The target is:
-
-**the simplest complete code that works, remains versatile, and can be understood from top to bottom.**
+## Documentation
+
+- [Documentation router](docs/index.md)
+- [Application principles](docs/shared/principles.md)
+- [Project structure](docs/shared/structure.md)
+- [Functional testing](docs/shared/testing.md)
+- [Harness and agent workflow](docs/harness/index.md)
+- [Current specifications](docs/specs/index.md)
+
+Mandatory instructions for coding agents live in [`AGENTS.md`](AGENTS.md). Claude loads the same source through [`CLAUDE.md`](CLAUDE.md).

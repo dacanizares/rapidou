@@ -1,3 +1,9 @@
+# Project context
+
+Rapidou is a small foundation and functional harness for applications built from Go, SQLite, JWT/bcrypt, embedded plain JavaScript, and direct functions. `src/` is the executable Museo Pixel base example; in a consuming repository, application code belongs to the parent and Rapidou lives at `lib/rapidou`.
+
+Before changing code, read `docs/index.md`, `docs/shared/principles.md`, and the relevant specification. Keep `README.md` limited to human onboarding; put durable operating rules here and detailed guidance under `docs/`.
+
 # Completion gate
 
 Before treating any implementation change as complete, always run:

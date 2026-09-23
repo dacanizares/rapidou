@@ -12,7 +12,8 @@ description: Run and interpret Rapidou's mandatory final functional gate in the 
    - `TestUI` running real Chromium clicks;
    - `TestSampleMuseum`;
    - `TestDelegationWorkflow`;
-   - `TestInstall`.
+   - `TestInstall`;
+   - `TestDocumentationRoutes`.
 4. Treat `SKIP`, missing Chromium, container failure, or absent `TestUI` output as failure.
 5. On failure, report the failing user journey and evidence. Fix only when the current task authorizes implementation, then rerun the complete command.
 6. Record the final passing command and results in the handoff.

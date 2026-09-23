@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -277,6 +278,70 @@ func TestInstall(t *testing.T) {
 	mergedInstaller := filepath.Join(mergedProject, "lib", "rapidou", "run", "install")
 	if output, err := exec.Command(mergedInstaller, "--accept-existing-hooks", mergedProject).CombinedOutput(); err != nil {
 		t.Fatalf("installer rejected confirmed merged hooks: %v: %s", err, output)
+	}
+}
+
+func TestDocumentationRoutes(t *testing.T) {
+	root := ".."
+	readme, err := os.ReadFile(filepath.Join(root, "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(readme) > 4000 {
+		t.Fatalf("README is no longer a concise onboarding page: %d bytes", len(readme))
+	}
+	for _, required := range []string{
+		"Any Application", "git submodule add", "./lib/rapidou/run/install",
+		"craft skill", "docs/shared/principles.md", "AGENTS.md", "CLAUDE.md",
+	} {
+		if !strings.Contains(string(readme), required) {
+			t.Fatalf("README is missing onboarding route %q", required)
+		}
+	}
+
+	for path, required := range map[string][]string{
+		"AGENTS.md":                   {"docs/index.md", "docs/shared/principles.md", "README.md"},
+		"docs/shared/principles.md":   {"Direct architecture", "Frontend", "Functional testing", "simplest design"},
+		"docs/example.md":             {"Museo Pixel", "admin@rapidou.test", "APP_JWT_SECRET"},
+		"docs/specs/documentation.md": {"Happy path", "Expected mistakes", "Acceptance"},
+	} {
+		contents, err := os.ReadFile(filepath.Join(root, path))
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+		for _, text := range required {
+			if !strings.Contains(string(contents), text) {
+				t.Fatalf("%s is missing %q", path, text)
+			}
+		}
+	}
+
+	for _, path := range []string{
+		"README.md", "docs/index.md", "docs/installation.md", "docs/example.md",
+		"docs/shared/index.md", "docs/shared/principles.md", "docs/specs/index.md",
+		"docs/harness/index.md",
+	} {
+		assertLocalMarkdownLinksResolve(t, root, path)
+	}
+}
+
+var markdownLink = regexp.MustCompile(`\[[^]]+\]\(([^)]+)\)`)
+
+func assertLocalMarkdownLinksResolve(t *testing.T, root, path string) {
+	t.Helper()
+	contents, err := os.ReadFile(filepath.Join(root, path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, match := range markdownLink.FindAllStringSubmatch(string(contents), -1) {
+		target := strings.Split(match[1], "#")[0]
+		if target == "" || strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
+			continue
+		}
+		resolved := filepath.Join(root, filepath.Dir(path), filepath.FromSlash(target))
+		if _, err := os.Stat(resolved); err != nil {
+			t.Fatalf("broken local link in %s: %s (%v)", path, match[1], err)
+		}
 	}
 }
 
