@@ -27,4 +27,5 @@
 
 - Automated harness tests cover both explicit model matrices, Qwen's inherited-model gate, installation, an outdated-Ollama recovery, local-settings merge, idempotency, and safe conflict refusal.
 - The README identifies Qwen Code Companion by its exact extension ID and documents both automatic and manual VSCodium installation.
+- The Instagram benchmark runs each configured local-agent trial from the same detached Rapidou commit, preserves its prompt and machine-readable output, and stores elapsed wall-clock time and exit status without counting model downloads.
 - `./run/test.sh` passes with the real Chromium journey before and after independent review.

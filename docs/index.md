@@ -8,6 +8,7 @@ Read only the context required by the task.
 - Observable product behavior: [specifications](specs/index.md)
 - Harness, delegation, or test execution: [harness](harness/index.md)
 - Coding-agent and local Qwen setup: [agent compatibility](agents.md)
+- Repeatable local-agent comparison: [benchmarks](benchmarks.md)
 - Installing Rapidou in another repository: [installation](installation.md)
 - Running the included application: [Museo Pixel example](example.md)
 
