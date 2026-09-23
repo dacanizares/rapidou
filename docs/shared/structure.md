@@ -550,17 +550,19 @@ Prefer shell scripts.
 Example:
 
 ```text
-run/dev
-run/build
-run/test
-run/docker
+run/dev.sh
+run/build.sh
+run/test.sh
+run/docker.sh
+run/install.sh
+run/installation_test.sh
 ```
 
 Do not create elaborate task runners or build systems unless required.
 
 ---
 
-## `run/dev`
+## `run/dev.sh`
 
 Starts the application for local development.
 
@@ -579,7 +581,7 @@ Do not hide important development behavior behind tooling.
 
 ---
 
-## `run/build`
+## `run/build.sh`
 
 Builds the application.
 
@@ -604,7 +606,7 @@ bin/
 
 ---
 
-## `run/test`
+## `run/test.sh`
 
 Runs all functional tests.
 
@@ -621,7 +623,7 @@ The final test command must build a Docker test target containing Chrome/Chromiu
 
 ---
 
-## `run/docker`
+## `run/docker.sh`
 
 Builds or runs the Docker image.
 

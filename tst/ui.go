@@ -19,7 +19,7 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 	t.Helper()
 	browserPath := browserExecutable()
 	if browserPath == "" {
-		t.Fatal("Chrome or Chromium is required; run the mandatory containerized harness with ./run/test")
+		t.Fatal("Chrome or Chromium is required; run the mandatory containerized harness with ./run/test.sh")
 	}
 
 	app, closeApp := factory(t)

@@ -109,7 +109,7 @@ else
         printf '## Rapidou\n\n'
         printf 'Rapidou is installed at `lib/rapidou`. Read `lib/rapidou/docs/index.md` and use the `craft` skill for implementation work.\n\n'
         printf 'Before every independent subagent, read `select-agent-model` and run `./lib/rapidou/ai/hooks/prepare-agent.sh select-agent-model <codex|claude> <complexity> <size>`. Use the exact returned model and, for Codex, reasoning effort.\n\n'
-        printf 'The consuming application must own its Docker/Chromium `./run/test` completion gate. `lib/rapidou/src/` is the executable base example, not application-owned source.\n'
+        printf 'The consuming application must own its Docker/Chromium `./run/test.sh` completion gate. `lib/rapidou/src/` is the executable base example, not application-owned source.\n'
         printf '%s\n' "$agents_end"
     } >> "$project_root/AGENTS.md"
 fi
@@ -126,4 +126,4 @@ fi
 
 printf 'Rapidou installed for Codex and Claude in %s\n' "$project_root"
 printf 'Restart both clients; in Codex, open /hooks and trust the project hook.\n'
-printf 'Next: adapt lib/rapidou/src/ as the base example and make the application own ./run/test.\n'
+printf 'Next: adapt lib/rapidou/src/ as the base example and make the application own ./run/test.sh.\n'

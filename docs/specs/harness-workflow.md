@@ -5,7 +5,9 @@ The files under `tst/` have separate roles:
 - `shared.go`: shared HTTP types and helpers used by the functional journeys;
 - `api.go`: application API and seed journeys;
 - `ui.go`: the real Chromium click journey;
-- `workflow_test.go`: self-tests for Rapidou's skills, agent hooks, installer, and documentation routing. It tests the harness workflow itself, not Museo Pixel behavior.
+- `installation_test.go`: self-tests for Rapidou's skills, agent hooks, installer, and documentation routing. It tests Rapidou's installation itself, not Museo Pixel behavior.
+
+Run those focused checks with `./run/installation_test.sh`. This fast command does not replace the final `./run/test.sh` Docker/Chromium gate.
 
 ## Happy path
 
@@ -28,5 +30,6 @@ The files under `tst/` have separate roles:
 - A container engine other than Docker or Podman is rejected.
 - An unanswered material product question pauses implementation; it is never silently decided by an agent.
 - Overlapping backend/frontend file ownership is serialized or reassigned before spawning agents.
-- Missing, skipped, or failing API, Chromium UI, seed, or delegation workflow results fail `./run/test`.
+- Missing, skipped, or failing API, Chromium UI, seed, or delegation workflow results fail `./run/test.sh`.
+- A passing `./run/installation_test.sh` alone never satisfies completion.
 - Host-only tests, API-only tests, a successful image build, or manual HTTP checks never satisfy completion.

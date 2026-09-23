@@ -37,7 +37,7 @@ Rapidou includes a small video game museum as its complete example application.
 
 ## Acceptance gate
 
-- No implementation change is complete until `./run/test` passes.
+- No implementation change is complete until `./run/test.sh` passes.
 - The command must run the API contract and the complete click-driven UI journey in the Dockerfile `functional-test` target with a real Chromium browser.
 - A skipped browser test, host-only test, API-only run, successful build, or manual HTTP check is not sufficient acceptance evidence.
 

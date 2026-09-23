@@ -5,7 +5,7 @@ description: Run and interpret Rapidou's mandatory final functional gate in the 
 
 # Run functional tests
 
-1. Run exactly `./run/test` from the repository root.
+1. Run exactly `./run/test.sh` from the repository root.
 2. Allow Docker, or Podman through the script's Docker-compatible fallback.
 3. Require explicit passing results for:
    - `TestAPI`;

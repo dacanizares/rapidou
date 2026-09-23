@@ -12,7 +12,7 @@ From the new application repository:
 
 ```sh
 git submodule add <rapidou-repository-url> lib/rapidou
-./lib/rapidou/run/install
+./lib/rapidou/run/install.sh
 ```
 
 Restart Codex or Claude. In Codex, open `/hooks` once and trust the project hook. Then describe the application in normal language.
@@ -44,8 +44,8 @@ After cloning an existing application:
 
 ```sh
 git submodule update --init --recursive
-./lib/rapidou/run/install
-./run/test
+./lib/rapidou/run/install.sh
+./run/test.sh
 ```
 
 See [installation](docs/installation.md) for existing hook configurations and repository setup.
@@ -55,8 +55,8 @@ See [installation](docs/installation.md) for existing hook configurations and re
 The included [Museo Pixel example](docs/example.md) demonstrates authentication, persistence, image uploads, responsive dialogs, external store links, and complete API/browser journeys:
 
 ```sh
-./run/dev
-./run/test
+./run/dev.sh
+./run/test.sh
 ```
 
 ## Documentation

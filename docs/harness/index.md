@@ -17,11 +17,11 @@ Restore a consuming clone with:
 
 ```sh
 git submodule update --init --recursive
-./lib/rapidou/run/install
-./run/test
+./lib/rapidou/run/install.sh
+./run/test.sh
 ```
 
-`./run/test` is the mandatory completion gate for every implementation change. It selects Docker first and Podman only as a Docker-compatible fallback, builds the `functional-test` target, and runs the complete API and browser journeys inside that container. A host-only `go test`, an API-only result, or a skipped UI test does not satisfy the gate.
+`./run/test.sh` is the mandatory completion gate for every implementation change. It selects Docker first and Podman only as a Docker-compatible fallback, builds the `functional-test` target, and runs the complete API and browser journeys inside that container. A host-only `go test`, an API-only result, or a skipped UI test does not satisfy the gate.
 
 The consuming application owns `.gitmodules` and the gitlink that pins Rapidou. This repository does not contain a nested submodule.
 

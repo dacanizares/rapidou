@@ -4,7 +4,7 @@ From the consuming repository:
 
 ```sh
 git submodule add <rapidou-repository-url> lib/rapidou
-./lib/rapidou/run/install
+./lib/rapidou/run/install.sh
 ```
 
 Commit `.gitmodules`, the `lib/rapidou` gitlink, `.agents/`, `.claude/`, `.codex/`, `AGENTS.md`, and `CLAUDE.md`.
@@ -13,12 +13,12 @@ The installer links one canonical set of skills into the paths Codex and Claude 
 
 Restart both clients after installation. In Codex, open `/hooks` and trust the project hook; Codex intentionally does not run an unreviewed repository hook.
 
-`lib/rapidou/src/` is a working base example: copy ideas or start the application from it deliberately. The installer never copies it. The consuming application must adapt `lib/rapidou/src/functional_test.go` to its own handler and own a `./run/test` that runs the complete harness in Docker with Chromium.
+`lib/rapidou/src/` is a working base example: copy ideas or start the application from it deliberately. The installer never copies it. The consuming application must adapt `lib/rapidou/src/functional_test.go` to its own handler and own a `./run/test.sh` that runs the complete harness in Docker with Chromium.
 
 After cloning:
 
 ```sh
 git submodule update --init --recursive
-./lib/rapidou/run/install
-./run/test
+./lib/rapidou/run/install.sh
+./run/test.sh
 ```

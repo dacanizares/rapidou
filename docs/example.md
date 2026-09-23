@@ -5,7 +5,7 @@
 Run it from this repository:
 
 ```sh
-./run/dev
+./run/dev.sh
 ```
 
 Open `http://localhost:8080` and use:
@@ -18,10 +18,10 @@ rapidou-local-password
 Build and verify it with:
 
 ```sh
-./run/build
-./run/test
+./run/build.sh
+./run/test.sh
 ```
 
-Production startup requires an explicit `APP_JWT_SECRET`; the defaults above exist only in `run/dev`.
+Production startup requires an explicit `APP_JWT_SECRET`; the defaults above exist only in `run/dev.sh`.
 
 The consuming application owns its adapted source and its `src/functional_test.go` bridge. Use this example to see the intended scale and direct structure, then implement the requested application rather than preserving museum-specific behavior.

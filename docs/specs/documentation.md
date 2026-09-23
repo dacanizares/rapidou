@@ -10,7 +10,7 @@
 
 ## Expected mistakes
 
-- Installing the submodule without running `run/install` leaves client discovery incomplete; the README must show both steps.
+- Installing the submodule without running `run/install.sh` leaves client discovery incomplete; the README must show both steps.
 - Treating Rapidou as a code generator executable is corrected by showing that Codex or Claude runs the `craft` workflow from a prompt.
 - Copying the example subject or visual language by default is prevented by stating that both belong to the example only.
 - Treating the museum as required product behavior is corrected by identifying it as the replaceable base example.
@@ -19,4 +19,4 @@
 
 - README is a short onboarding page rather than the architecture manual.
 - No existing project rule or example operating detail is lost; each has a documented destination.
-- Documentation links resolve, agent routing tests pass, and `./run/test` passes with the real Chromium journey before and after review.
+- Documentation links resolve, agent routing tests pass, and `./run/test.sh` passes with the real Chromium journey before and after review.

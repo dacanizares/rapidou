@@ -200,7 +200,7 @@ func TestInstall(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	installer := filepath.Join(project, "lib", "rapidou", "run", "install")
+	installer := filepath.Join(project, "lib", "rapidou", "run", "install.sh")
 	for attempt := 0; attempt < 2; attempt++ {
 		if output, err := exec.Command(installer, project).CombinedOutput(); err != nil {
 			t.Fatalf("install attempt %d failed: %v: %s", attempt+1, err, output)
@@ -246,7 +246,7 @@ func TestInstall(t *testing.T) {
 	if err := os.WriteFile(conflict, []byte(conflictContents), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if output, err := exec.Command(filepath.Join(conflictProject, "lib", "rapidou", "run", "install"), conflictProject).CombinedOutput(); err == nil {
+	if output, err := exec.Command(filepath.Join(conflictProject, "lib", "rapidou", "run", "install.sh"), conflictProject).CombinedOutput(); err == nil {
 		t.Fatalf("installer overwrote an unrelated config: %s", output)
 	}
 	contents, err := os.ReadFile(conflict)
@@ -275,7 +275,7 @@ func TestInstall(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	mergedInstaller := filepath.Join(mergedProject, "lib", "rapidou", "run", "install")
+	mergedInstaller := filepath.Join(mergedProject, "lib", "rapidou", "run", "install.sh")
 	if output, err := exec.Command(mergedInstaller, "--accept-existing-hooks", mergedProject).CombinedOutput(); err != nil {
 		t.Fatalf("installer rejected confirmed merged hooks: %v: %s", err, output)
 	}
@@ -283,6 +283,28 @@ func TestInstall(t *testing.T) {
 
 func TestDocumentationRoutes(t *testing.T) {
 	root := ".."
+	runEntries, err := os.ReadDir(filepath.Join(root, "run"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range runEntries {
+		if !entry.IsDir() && !strings.HasSuffix(entry.Name(), ".sh") {
+			t.Fatalf("run script must use the .sh extension: %s", entry.Name())
+		}
+	}
+
+	installationScript := filepath.Join(root, "run", "installation_test.sh")
+	info, err := os.Stat(installationScript)
+	if err != nil {
+		t.Fatalf("missing focused installation test command: %v", err)
+	}
+	if info.Mode()&0o111 == 0 {
+		t.Fatalf("focused installation test command is not executable: %s", installationScript)
+	}
+	if _, err := os.Stat(filepath.Join(root, "tst", "workflow_test.go")); !os.IsNotExist(err) {
+		t.Fatalf("obsolete workflow_test.go still exists")
+	}
+
 	readme, err := os.ReadFile(filepath.Join(root, "README.md"))
 	if err != nil {
 		t.Fatal(err)
@@ -291,7 +313,7 @@ func TestDocumentationRoutes(t *testing.T) {
 		t.Fatalf("README is no longer a concise onboarding page: %d bytes", len(readme))
 	}
 	for _, required := range []string{
-		"Any Application", "git submodule add", "./lib/rapidou/run/install",
+		"Any Application", "git submodule add", "./lib/rapidou/run/install.sh",
 		"Example prompt", "only an example", "community astronomy club", "craft skill",
 		"docs/shared/principles.md", "AGENTS.md", "CLAUDE.md",
 	} {

@@ -104,7 +104,7 @@ Test the failures that are realistic, important, or dangerous.
 
 UI tests should exercise complete user flows in a real browser.
 
-The full UI flow is a mandatory completion gate. Run it through `./run/test`, inside the Docker test target that owns Chromium. Never accept a skipped browser test or an API-only run as final verification.
+The full UI flow is a mandatory completion gate. Run it through `./run/test.sh`, inside the Docker test target that owns Chromium. Never accept a skipped browser test or an API-only run as final verification.
 
 Think in terms of user journeys rather than individual buttons or components.
 

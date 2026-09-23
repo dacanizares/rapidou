@@ -20,7 +20,7 @@ COPY .claude ./.claude
 COPY .codex ./.codex
 COPY docs ./docs
 COPY AGENTS.md CLAUDE.md README.md ./
-COPY run/install ./run/install
+COPY run ./run
 CMD ["go", "test", "./...", "-v", "-count=1"]
 
 FROM ubuntu:24.04
