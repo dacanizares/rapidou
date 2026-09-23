@@ -7,5 +7,6 @@ Read only the context required by the task.
 - Frontend or browser change: [frontend](frontend/index.md)
 - Observable product behavior: [specifications](specs/index.md)
 - Harness, delegation, or test execution: [harness](harness/index.md)
+- Installing Rapidou in another repository: [installation](installation.md)
 
 The root [README](../README.md) defines the project's simplicity rules. Specifications are the implementation plan; do not create a second planning document for normal feature work.

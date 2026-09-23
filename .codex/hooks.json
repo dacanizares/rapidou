@@ -1,0 +1,16 @@
+{
+  "description": "Rapidou requires a model selection immediately before each subagent.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$(git rev-parse --show-toplevel)/ai/hooks/enforce-agent-selection.sh\" codex"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
 if [[ -n "${CONTAINER_ENGINE:-}" ]]; then
     engine="$CONTAINER_ENGINE"
 elif command -v docker >/dev/null 2>&1; then
@@ -27,7 +29,7 @@ trap 'rm -f "$test_log"' EXIT
 "$engine" build --target functional-test -t "$image" .
 "$engine" run --rm --shm-size=256m "$image" | tee "$test_log"
 
-for required in "--- PASS: TestAPI" "--- PASS: TestUI" "--- PASS: TestSampleMuseum" "--- PASS: TestDelegationWorkflow"; do
+for required in "--- PASS: TestAPI" "--- PASS: TestUI" "--- PASS: TestSampleMuseum" "--- PASS: TestDelegationWorkflow" "--- PASS: TestInstall"; do
     if ! grep -Fq -- "$required" "$test_log"; then
         echo "error: mandatory functional result is missing: $required" >&2
         exit 1

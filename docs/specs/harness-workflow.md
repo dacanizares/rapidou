@@ -5,9 +5,9 @@
 - `craft` receives a feature or bug-fix prompt and uses `spec` to update a concise observable-behavior contract; that spec is the plan.
 - The spec names the happy path, realistic user mistakes, expected errors, and required functional coverage.
 - `questions` resolves only material gaps, one question at a time, before implementation.
-- Before every independent agent, the parent invokes `select-agent-model`, classifies complexity and size, and runs `ai/hooks/prepare-agent.sh`.
-- The hook returns the exact model and reasoning effort for the spawn. This applies to parallel and sequential agents, Luna searches, and reviews.
-- `AGENTS.md` is the repository enforcement point for the pre-spawn rule; the shell hook validates selection but cannot intercept the platform's agent-spawn tool directly.
+- Before every independent agent, the parent invokes `select-agent-model`, classifies complexity and size, and runs `ai/hooks/prepare-agent.sh` for Codex or Claude.
+- The selector returns the exact platform model and, for Codex, reasoning effort. This applies to parallel and sequential agents, Luna searches, and reviews.
+- Codex and Claude `PreToolUse` hooks intercept their `Agent` tool and consume one matching selection. `AGENTS.md` remains the readable policy.
 - Backend and frontend agents read their domain indexes, implement only their owned scope, and add the corresponding API or click-driven browser tests.
 - `run-functional-tests` runs the complete Docker/Chromium gate after implementation.
 - A fresh independent `code-review` agent reviews the spec, diff, tests, and simplicity rules without editing.
@@ -16,6 +16,7 @@
 ## Workflow failures
 
 - Hook invocation without the literal `select-agent-model` argument is rejected, and direct hook bypass violates the mandatory `AGENTS.md` delegation gate.
+- A spawn without a fresh selection, with the wrong platform, or with a different model is blocked.
 - An unknown complexity or size classification is rejected.
 - A container engine other than Docker or Podman is rejected.
 - An unanswered material product question pauses implementation; it is never silently decided by an agent.

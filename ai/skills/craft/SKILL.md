@@ -12,7 +12,7 @@ Treat the spec as the plan. Do not create a second planning artifact.
 3. Invoke `$questions`. Ask one question at a time only while a material gap remains; pause implementation until resolved.
 4. Use `$luna` when repository discovery is broad enough to deserve an independent read-only search.
 5. Split approved work into explicit backend and frontend ownership:
-   - invoke `$select-agent-model` and `./ai/hooks/prepare-agent.sh` before every spawn;
+   - invoke `$select-agent-model` and `./ai/hooks/prepare-agent.sh select-agent-model <codex|claude> ...` before every spawn;
    - delegate `$backend` and `$frontend` to independent agents, in parallel only when their file ownership does not overlap;
    - keep shared spec and coordination files owned by the parent.
 6. Reconcile agent output against the spec. Add or correct the functional API and Chromium journeys each domain requires.

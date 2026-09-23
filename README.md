@@ -26,6 +26,8 @@ Run the complete functional contract and build the single binary with:
 
 Project documentation is routed through [`docs/index.md`](docs/index.md). Reusable agent workflows live under [`ai/skills/`](ai/skills/index.md); `craft` drives a request from spec through two functional-test gates. Every independent agent must first use `select-agent-model` and the delegation hook described in `AGENTS.md`.
 
+To consume Rapidou as a Git submodule at `lib/rapidou`, run `./lib/rapidou/run/install`. It installs the same canonical skills and one-shot delegation guard for both Codex and Claude without copying them. See the concise [installation guide](docs/installation.md). This repository's `src/` is the working base example; a consuming application owns its adapted source and functional-test bridge.
+
 Build this application with extreme simplicity as the primary architectural constraint.
 
 The application must remain plain, direct, small, and easy for both humans and machines to understand.

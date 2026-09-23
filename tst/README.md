@@ -2,11 +2,12 @@
 
 This directory owns Rapidou's portable functional contract. It sees the application only as an `http.Handler`: API flows use `httptest`, and the UI flow runs the same handler through a real browser with `chromedp`.
 
-Rapidou keeps a thin bridge in `src/functional_test.go`. A consuming application may pin this Rapidou repository as a Git submodule. The harness does not import application internals or inspect its database.
+The base example keeps a thin bridge in `src/functional_test.go`. A consuming application pins this repository at `lib/rapidou` and adapts that bridge in its own source. The harness does not import application internals or inspect its database.
 
 Run it from the parent repository with:
 
 ```sh
+./lib/rapidou/run/install
 ./run/test
 ```
 

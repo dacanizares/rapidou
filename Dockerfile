@@ -15,8 +15,12 @@ RUN go mod download
 COPY src ./src
 COPY tst ./tst
 COPY ai ./ai
+COPY .agents ./.agents
+COPY .claude ./.claude
+COPY .codex ./.codex
 COPY docs ./docs
-COPY AGENTS.md README.md ./
+COPY AGENTS.md CLAUDE.md README.md ./
+COPY run/install ./run/install
 CMD ["go", "test", "./...", "-v", "-count=1"]
 
 FROM ubuntu:24.04
