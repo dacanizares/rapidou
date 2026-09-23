@@ -25,6 +25,18 @@ For a fully local Qwen Code and Ollama stack with no paid subscription:
 ./lib/rapidou/run/install-opensource.sh
 ```
 
+If VSCodium is available as `codium`, the installer also installs the official
+**Qwen Code Companion** extension automatically. To install it manually:
+
+```sh
+codium --install-extension qwenlm.qwen-code-vscode-ide-companion
+```
+
+Then restart VSCodium, open an integrated terminal in the application repository,
+run `qwen`, and enter `/ide enable`. Microsoft VS Code uses the same extension ID
+with `code --install-extension`, but automatic installation currently targets
+VSCodium.
+
 ### Example prompt
 
 This is only an example—the subject, features, and visual direction are yours:

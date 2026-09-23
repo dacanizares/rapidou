@@ -58,7 +58,13 @@ Run the lightweight diagnosis at any time:
 ./run/doctor-ai.sh --smoke
 ```
 
-Qwen Code Companion is published on Open VSX as `qwenlm.qwen-code-vscode-ide-companion`. After a command-line installation, open a new VSCodium integrated terminal, start `qwen`, and run `/ide enable`; that connection step requires the IDE environment and remains interactive.
+Qwen Code Companion is published on Open VSX as `qwenlm.qwen-code-vscode-ide-companion`. The installer adds it automatically when `codium` is on `PATH`. Install it manually when necessary with:
+
+```sh
+codium --install-extension qwenlm.qwen-code-vscode-ide-companion
+```
+
+It can also be found from VSCodium's Extensions view by searching for that exact ID. After installation, restart VSCodium, open a new integrated terminal in the application repository, start `qwen`, and run `/ide enable`; that connection step requires the IDE environment and remains interactive. Microsoft VS Code accepts the same extension ID through `code --install-extension`, but Rapidou only automates VSCodium installation.
 
 ## Verified official references
 
