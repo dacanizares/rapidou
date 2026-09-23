@@ -135,3 +135,50 @@ Dockerfile
 Choose the simplest design that works correctly. Prefer explicit code over implicit behavior, direct calls over indirection, concrete code over generic infrastructure, browser and language primitives over frameworks, and a small amount of boring code over a sophisticated abstraction.
 
 Do not solve hypothetical future problems or add infrastructure for possible future requirements. Implement the feature that exists now. The goal is not minimal code at any cost; it is simple, complete, adaptable code.
+
+## Code clarity
+
+Write code that is easy for humans and AI agents to inspect, modify, and debug.
+
+Prefer:
+
+- boring > clever
+- explicit > compressed
+- local reasoning > abstraction
+- simple control flow > dense expression chains
+- named intermediate values > deeply nested expressions
+
+Use loops and `if` statements when they make multi-step logic clearer.
+
+Avoid clever one-liners, long method chains, unnecessary abstractions, metaprogramming, and hidden control flow.
+
+Do not make simple idiomatic code artificially verbose. Simple idioms are fine when they represent one obvious operation:
+
+```ts
+const user = users.find((user) => user.id === userId);
+```
+
+For multi-step logic, prefer explicit code:
+
+```ts
+// BAD
+const result = Array.from(new Set(array)).map((x) => x * 2).filter((x) => x > 10);
+
+// GOOD
+const result: number[] = [];
+const seen = new Set<number>();
+
+for (const x of array) {
+    if (seen.has(x)) {
+        continue;
+    }
+
+    seen.add(x);
+
+    const doubled = x * 2;
+
+    if (doubled > 10) {
+        result.push(doubled);
+    }
+}
+```
