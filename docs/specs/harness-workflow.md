@@ -1,5 +1,12 @@
 # Harness workflow
 
+The files under `tst/` have separate roles:
+
+- `shared.go`: shared HTTP types and helpers used by the functional journeys;
+- `api.go`: application API and seed journeys;
+- `ui.go`: the real Chromium click journey;
+- `workflow_test.go`: self-tests for Rapidou's skills, agent hooks, installer, and documentation routing. It tests the harness workflow itself, not Museo Pixel behavior.
+
 ## Happy path
 
 - `craft` receives a feature or bug-fix prompt and uses `spec` to update a concise observable-behavior contract; that spec is the plan.
