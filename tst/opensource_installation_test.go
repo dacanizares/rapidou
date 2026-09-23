@@ -115,6 +115,78 @@ func TestQwenSettingsMergeRejectsInvalidJSON(t *testing.T) {
 	}
 }
 
+func TestOpenSourceInstallerUpdatesOllamaWhenModelRequiresNewerVersion(t *testing.T) {
+	root, err := filepath.Abs("..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	home := t.TempDir()
+	bin := filepath.Join(t.TempDir(), "bin")
+	if err := os.MkdirAll(bin, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	writeExecutable(t, filepath.Join(bin, "curl"), `#!/bin/sh
+for arg in "$@"; do
+  if [ "$arg" = "https://ollama.com/install.sh" ]; then
+    printf '%s\n' '#!/bin/sh' 'touch "$HOME/ollama-updated"'
+    exit 0
+  fi
+done
+printf '{}\n'
+`)
+	writeExecutable(t, filepath.Join(bin, "ollama"), `#!/bin/sh
+case "$1" in
+  --version) echo "ollama version 0.old" ;;
+  list)
+    printf 'NAME ID SIZE MODIFIED\n'
+    [ -f "$HOME/model-pulled" ] && printf 'qwen3.8:27b-q8_0 abc 30GB now\n'
+    ;;
+  pull)
+    echo pull >> "$HOME/pull-attempts"
+    if [ ! -f "$HOME/ollama-updated" ]; then
+      echo "Error: pull model manifest: 412:" >&2
+      echo "The model you are attempting to pull requires a newer version of Ollama." >&2
+      exit 1
+    fi
+    touch "$HOME/model-pulled"
+    echo success
+    ;;
+  *) exit 0 ;;
+esac
+`)
+	writeExecutable(t, filepath.Join(bin, "qwen"), `#!/bin/sh
+if [ "$1" = "--version" ]; then
+  echo "0.test"
+else
+  printf '[{"type":"result","subtype":"success","result":"RAPIDOU_OK"}]\n'
+fi
+`)
+	writeExecutable(t, filepath.Join(bin, "codium"), "#!/bin/sh\n[ \"$1\" = \"--list-extensions\" ] && echo qwenlm.qwen-code-vscode-ide-companion\n")
+
+	installer := filepath.Join(root, "run", "install-opensource.sh")
+	command := exec.Command(installer)
+	command.Env = append(os.Environ(),
+		"HOME="+home,
+		"PATH="+bin+":/usr/bin:/bin",
+		"RAPIDOU_QWEN_MODEL=qwen3.8:27b-q8_0",
+	)
+	if output, err := command.CombinedOutput(); err != nil {
+		t.Fatalf("open-source installer did not recover from outdated Ollama: %v: %s", err, output)
+	}
+
+	attempts, err := os.ReadFile(filepath.Join(home, "pull-attempts"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Count(string(attempts), "pull\n") != 2 {
+		t.Fatalf("model pull attempts = %q, want exactly two", attempts)
+	}
+	if _, err := os.Stat(filepath.Join(home, "ollama-updated")); err != nil {
+		t.Fatalf("official Ollama updater was not invoked: %v", err)
+	}
+}
+
 func writeExecutable(t *testing.T, path, contents string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(strings.TrimSpace(contents)+"\n"), 0o755); err != nil {

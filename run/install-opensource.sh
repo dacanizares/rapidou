@@ -37,6 +37,87 @@ wait_for_api() {
     exit 1
 }
 
+ollama_service_available() {
+    command -v systemctl >/dev/null 2>&1 \
+        && systemctl list-unit-files --type=service 2>/dev/null \
+            | awk '{print $1}' \
+            | grep -Fxq ollama.service
+}
+
+install_ollama() {
+    local action="$1"
+    if [[ "$(uname -s)" != "Linux" ]]; then
+        echo "error: automatic Ollama installation and updates are Linux-only; install the latest version from https://ollama.com/download and rerun" >&2
+        exit 2
+    fi
+    echo "$action Ollama with its official Linux installer..."
+    curl -fsSL https://ollama.com/install.sh | sh
+    hash -r
+}
+
+start_ollama() {
+    if ollama_service_available; then
+        if [[ "$(id -u)" -eq 0 ]]; then
+            systemctl enable --now ollama
+        else
+            need sudo
+            sudo systemctl enable --now ollama
+        fi
+    else
+        ollama serve >"${TMPDIR:-/tmp}/rapidou-ollama.log" 2>&1 &
+    fi
+}
+
+restart_ollama_after_update() {
+    local pid executable arguments stopped=false
+    if ollama_service_available; then
+        if [[ "$(id -u)" -eq 0 ]]; then
+            systemctl restart ollama
+        else
+            need sudo
+            sudo systemctl restart ollama
+        fi
+        return
+    fi
+
+    while read -r pid executable arguments; do
+        if [[ "${executable##*/}" == "ollama" && "$arguments" == "serve" ]]; then
+            kill "$pid"
+            stopped=true
+        fi
+    done < <(ps -eo pid=,args=)
+
+    if [[ "$stopped" == true ]]; then
+        for _ in {1..30}; do
+            api_ready || break
+            sleep 0.2
+        done
+    fi
+    if ! api_ready; then
+        start_ollama
+    fi
+}
+
+pull_model() {
+    local model="$1" pull_log
+    pull_log="$(mktemp "${TMPDIR:-/tmp}/rapidou-ollama-pull.XXXXXX")"
+    if ollama pull "$model" 2>&1 | tee "$pull_log"; then
+        rm -f "$pull_log"
+        return
+    fi
+    if ! grep -Fq "requires a newer version of Ollama" "$pull_log"; then
+        rm -f "$pull_log"
+        return 1
+    fi
+
+    rm -f "$pull_log"
+    install_ollama "Updating"
+    restart_ollama_after_update
+    wait_for_api
+    echo "Retrying $model with the updated Ollama..."
+    ollama pull "$model"
+}
+
 detect_ram_gib() {
     local bytes kib
     if [[ -r /proc/meminfo ]]; then
@@ -100,25 +181,11 @@ need curl
 need python3
 
 if ! command -v ollama >/dev/null 2>&1; then
-    if [[ "$(uname -s)" != "Linux" ]]; then
-        echo "error: automatic Ollama installation is Linux-only; install Ollama from https://ollama.com/download and rerun" >&2
-        exit 2
-    fi
-    echo "Installing Ollama with its official Linux installer..."
-    curl -fsSL https://ollama.com/install.sh | sh
+    install_ollama "Installing"
 fi
 
 if ! api_ready; then
-    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files --type=service 2>/dev/null | awk '{print $1}' | grep -Fxq ollama.service; then
-        if [[ "$(id -u)" -eq 0 ]]; then
-            systemctl enable --now ollama
-        else
-            need sudo
-            sudo systemctl enable --now ollama
-        fi
-    else
-        ollama serve >"${TMPDIR:-/tmp}/rapidou-ollama.log" 2>&1 &
-    fi
+    start_ollama
 fi
 wait_for_api
 
@@ -142,7 +209,7 @@ echo "  Context: $context_window tokens"
 
 if ! ollama list | awk 'NR > 1 {print $1}' | grep -Fxq "$model"; then
     echo "Pulling $model..."
-    ollama pull "$model"
+    pull_model "$model"
 else
     echo "Model already present: $model"
 fi

@@ -37,7 +37,7 @@ Run from the Rapidou checkout:
 ./run/install-opensource.sh
 ```
 
-The script installs missing Ollama and Qwen Code on Linux using their official installers, starts Ollama, chooses a conservative model from total RAM, pulls it once, merges an OpenAI-compatible provider into `~/.qwen/settings.json`, installs the official Qwen Code Companion in VSCodium when available, and runs an isolated headless smoke prompt. Override only the model when needed:
+The script installs missing Ollama and Qwen Code on Linux using their official installers, starts Ollama, chooses a conservative model from total RAM, pulls it, merges an OpenAI-compatible provider into `~/.qwen/settings.json`, installs the official Qwen Code Companion in VSCodium when available, and runs an isolated headless smoke prompt. If the model manifest requires a newer Ollama, the script updates Ollama through its official Linux installer, restarts it, and retries that pull once. Override only the model when needed:
 
 ```sh
 RAPIDOU_QWEN_MODEL=qwen3.5:9b ./run/install-opensource.sh
