@@ -17,14 +17,15 @@ usage: run/benchmark-instagram.sh --output DIRECTORY [options]
 Runs comparable isolated Instagram-like application builds.
 
   --output DIRECTORY     New directory that will receive one Git worktree per trial.
-  --run NAME             all (default), codex-oss-qwen27b, qwen-9b, or qwen-27b.
+  --run NAME             all (default), codex, codex-oss-qwen27b, qwen-9b, or qwen-27b.
   --prepare              Pull both local Ollama models and exit; setup time is not measured.
   --turns NUMBER         Maximum agent turns per Qwen trial (default: 80).
   --wall-time DURATION   Maximum wall time per trial (default: 90m).
 
-The Codex trial uses Codex's local Ollama provider and Qwen 3.8 27B. It measures
-Codex's agent/tool loop with a local Qwen model; it is not a cloud-Codex
-subagent-orchestration benchmark.
+`codex` uses the authenticated Codex default model. `codex-oss-qwen27b` uses
+Codex's local Ollama provider and Qwen 3.8 27B. The latter measures Codex's
+agent/tool loop with a local Qwen model; it is not cloud-Codex subagent
+orchestration.
 EOF
 }
 
@@ -40,8 +41,16 @@ model_present() {
 }
 
 prepare_models() {
+    local model
+    local models=()
     need ollama
-    for model in qwen3.5:9b qwen3.8:27b; do
+    case "$selection" in
+        all) models=(qwen3.5:9b qwen3.8:27b) ;;
+        qwen-9b) models=(qwen3.5:9b) ;;
+        qwen-27b|codex-oss-qwen27b) models=(qwen3.8:27b) ;;
+        codex) return ;;
+    esac
+    for model in "${models[@]}"; do
         if model_present "$model"; then
             echo "Model already present: $model"
         else
@@ -102,13 +111,23 @@ run_trial() {
                 --max-wall-time "$wall_time"
         ) >"$trial_root/agent.json" 2>&1
         status=$?
-    else
+    elif [[ "$runner" == "codex-oss" ]]; then
         (
             cd "$worktree"
             codex exec \
                 --oss \
                 --local-provider ollama \
                 --model "$model" \
+                --sandbox workspace-write \
+                --json \
+                --ephemeral \
+                "$(<"$prompt_file")"
+        ) >"$trial_root/agent.jsonl" 2>&1
+        status=$?
+    else
+        (
+            cd "$worktree"
+            codex exec \
                 --sandbox workspace-write \
                 --json \
                 --ephemeral \
@@ -154,7 +173,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$selection" in
-    all|codex-oss-qwen27b|qwen-9b|qwen-27b) ;;
+    all|codex|codex-oss-qwen27b|qwen-9b|qwen-27b) ;;
     *) echo "error: unknown trial: $selection" >&2; exit 2 ;;
 esac
 
@@ -169,16 +188,21 @@ fi
 [[ ! -e "$output_root" ]] || { echo "error: output directory already exists: $output_root" >&2; exit 2; }
 need git
 need python3
-need qwen
-if [[ "$selection" == all || "$selection" == codex-oss-qwen27b ]]; then
+if [[ "$selection" == all || "$selection" == qwen-9b || "$selection" == qwen-27b || "$selection" == codex-oss-qwen27b ]]; then
+    need qwen
+fi
+if [[ "$selection" == all || "$selection" == codex || "$selection" == codex-oss-qwen27b ]]; then
     need codex
 fi
 
 prepare_models
 
 mkdir -p "$output_root"
+if [[ "$selection" == all || "$selection" == codex ]]; then
+    run_trial codex codex codex-default
+fi
 if [[ "$selection" == all || "$selection" == codex-oss-qwen27b ]]; then
-    run_trial codex-oss-qwen27b codex qwen3.8:27b
+    run_trial codex-oss-qwen27b codex-oss qwen3.8:27b
 fi
 if [[ "$selection" == all || "$selection" == qwen-9b ]]; then
     run_trial qwen-9b qwen qwen3.5:9b

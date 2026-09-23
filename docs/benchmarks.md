@@ -8,16 +8,18 @@ preparation step so they are not part of the result.
 
 The three standard trials are deliberately distinct:
 
-| Trial | Agent/tool loop | Local model |
+| Trial | Agent/tool loop | Model |
 |---|---|---|
+| `codex` | Authenticated Codex CLI | Your configured Codex default |
 | `codex-oss-qwen27b` | Codex CLI using its local Ollama provider | `qwen3.8:27b` |
 | `qwen-9b` | Qwen Code CLI | `qwen3.5:9b` |
 | `qwen-27b` | Qwen Code CLI | `qwen3.8:27b` |
 
-The first measures the Codex CLI agent loop with an open-weight model. It does
-not claim that a cloud Codex model delegates natively to Qwen: that capability
-does not exist in the client contract. The two Qwen trials isolate the effect of
-model size under Qwen Code's own loop.
+`codex` is the baseline: it uses no local Qwen model. `codex-oss-qwen27b`
+measures the Codex CLI agent loop with an open-weight model. It does not claim
+that a cloud Codex model delegates natively to Qwen: that capability does not
+exist in the client contract. The two Qwen trials isolate the effect of model
+size under Qwen Code's own loop.
 
 ## Run
 
@@ -28,7 +30,7 @@ the benchmark timing:
 ./lib/rapidou/run/benchmark-instagram.sh --prepare
 ```
 
-Run all three into a new, empty directory outside the repository:
+Run all four into a new, empty directory outside the repository:
 
 ```sh
 ./lib/rapidou/run/benchmark-instagram.sh \
@@ -47,7 +49,7 @@ budget:
   --turns 80 --wall-time 90m
 ```
 
-Run one trial only with `--run qwen-9b`, `--run qwen-27b`, or
-`--run codex-oss-qwen27b`. Review the three `metadata.json` files first, then
+Run one trial only with `--run codex`, `--run qwen-9b`, `--run qwen-27b`, or
+`--run codex-oss-qwen27b`. Review the four `metadata.json` files first, then
 open each `app/` and run its documented functional test before judging the
 generated application.
