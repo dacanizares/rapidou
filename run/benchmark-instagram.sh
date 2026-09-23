@@ -3,7 +3,7 @@ set -euo pipefail
 
 rapidou_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 prompt_file="$rapidou_root/ai/benchmarks/instagram-like-prompt.md"
-output_root=""
+output_root="$rapidou_root/run/tmp"
 selection="all"
 turns=80
 wall_time=90m
@@ -12,11 +12,12 @@ failed_trials=0
 
 usage() {
     cat <<'EOF'
-usage: run/benchmark-instagram.sh --output DIRECTORY [options]
+usage: run/benchmark-instagram.sh [options]
 
 Runs comparable isolated Instagram-like application builds.
 
-  --output DIRECTORY     New directory that will receive one Git worktree per trial.
+  --output DIRECTORY     New directory that will receive one Git worktree per trial
+                         (default: run/tmp beside this script).
   --run NAME             all (default), codex, codex-oss-qwen27b, qwen-9b, or qwen-27b.
   --prepare              Pull both local Ollama models and exit; setup time is not measured.
   --turns NUMBER         Maximum agent turns per Qwen trial (default: 80).
@@ -177,10 +178,6 @@ case "$selection" in
     *) echo "error: unknown trial: $selection" >&2; exit 2 ;;
 esac
 
-if [[ "$prepare" == false && -z "$output_root" ]]; then
-    echo "error: --output is required unless --prepare is used" >&2
-    exit 2
-fi
 if [[ "$prepare" == true ]]; then
     prepare_models
     exit 0
@@ -199,10 +196,10 @@ prepare_models
 
 mkdir -p "$output_root"
 if [[ "$selection" == all || "$selection" == codex ]]; then
-    run_trial codex codex codex-default
+    run_trial only-codex codex codex-default
 fi
 if [[ "$selection" == all || "$selection" == codex-oss-qwen27b ]]; then
-    run_trial codex-oss-qwen27b codex-oss qwen3.8:27b
+    run_trial codex-ollama codex-oss qwen3.8:27b
 fi
 if [[ "$selection" == all || "$selection" == qwen-9b ]]; then
     run_trial qwen-9b qwen qwen3.5:9b

@@ -30,23 +30,21 @@ the benchmark timing:
 ./lib/rapidou/run/benchmark-instagram.sh --prepare
 ```
 
-Run all four into a new, empty directory outside the repository:
+From `run/`, launch everything with one command:
 
 ```sh
-./lib/rapidou/run/benchmark-instagram.sh \
-  --output "$HOME/rapidou-instagram-benchmark"
+./benchmark-instagram.sh
 ```
 
-Each output directory contains `app/` (the resulting application worktree), the
-immutable `prompt.md`, `agent.json` or `agent.jsonl`, and `metadata.json`.
-Do not use the same output directory twice. The defaults allow 80 Qwen turns and
-90 minutes per trial; adjust them only for all trials if you need a different
-budget:
+It creates `run/tmp/only-codex`, `run/tmp/codex-ollama`, `run/tmp/qwen-9b`, and
+`run/tmp/qwen-27b`. Each contains `app/` (the resulting application worktree),
+the immutable `prompt.md`, `agent.json` or `agent.jsonl`, and `metadata.json`.
+The script refuses to overwrite an existing `run/tmp` benchmark. The defaults
+allow 80 Qwen turns and 90 minutes per trial; adjust them only for all trials if
+you need a different budget:
 
 ```sh
-./lib/rapidou/run/benchmark-instagram.sh \
-  --output "$HOME/rapidou-instagram-benchmark" \
-  --turns 80 --wall-time 90m
+./benchmark-instagram.sh --turns 80 --wall-time 90m
 ```
 
 Run one trial only with `--run codex`, `--run qwen-9b`, `--run qwen-27b`, or
