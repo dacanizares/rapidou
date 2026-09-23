@@ -15,6 +15,7 @@ Rapidou includes a small video game museum as its complete example application.
 - Interactive controls inside a card keep their own behavior and do not open the detail popup.
 - An authenticated curator can add, edit, and remove museum pieces.
 - Adding and editing use one compact responsive popup; catalog cards remain focused on viewing and expose only small curator actions.
+- Creating a piece keeps the popup open after the first save so the curator can attach images. Saving an existing piece refreshes the catalog and closes the popup automatically.
 - Each piece has a title, platform, release year, optional description, optional Steam URL, and optional GOG URL.
 - Store URLs must use HTTPS and their corresponding official domain. Public cards show a Steam or GOG button only when that link exists.
 - Each piece may have multiple JPEG, PNG, GIF, or WebP images.

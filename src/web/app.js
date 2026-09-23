@@ -230,6 +230,10 @@ async function saveGame(event) {
         });
         state.editingGameID = saved.id;
         await refreshGames();
+        if (!creating) {
+            closeGameDialog();
+            return;
+        }
         const game = state.games.find((item) => item.id === saved.id);
         document.querySelector("#dialog-title").textContent = `Editar ${game.title}`;
         document.querySelector("#save").textContent = "Guardar cambios";

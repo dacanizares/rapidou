@@ -79,7 +79,7 @@ func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 		chromedp.SetValue("#title", "The Legend of Zelda — Museum Edition", chromedp.ByQuery),
 		chromedp.Click("#save", chromedp.ByQuery),
 		chromedp.Poll(`document.querySelector("#games").textContent.includes("Museum Edition")`, nil),
-		chromedp.Click("#close-dialog", chromedp.ByQuery),
+		chromedp.WaitNotVisible("#game-dialog", chromedp.ByQuery),
 		chromedp.Poll(`document.querySelectorAll("#games .store-link").length === 2`, nil),
 		chromedp.Click("#games .artifact", chromedp.ByQuery),
 		chromedp.WaitVisible("#detail-dialog", chromedp.ByQuery),
