@@ -87,7 +87,8 @@ PY
 
 run_trial() {
     local trial="$1" runner="$2" model="$3"
-    local trial_root="$output_root/$trial" worktree="$trial_root/app"
+    local trial_root="$output_root/$trial"
+    local worktree="$trial_root/app"
     local started finished status
 
     mkdir -p "$trial_root"
