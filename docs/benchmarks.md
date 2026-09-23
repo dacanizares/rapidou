@@ -6,7 +6,7 @@ each agent's raw machine-readable output and `metadata.json` with the elapsed
 wall-clock time and exit status. Model downloads are performed in a separate
 preparation step so they are not part of the result.
 
-The three standard trials are deliberately distinct:
+The four standard trials are deliberately distinct:
 
 | Trial | Agent/tool loop | Model |
 |---|---|---|
@@ -39,9 +39,10 @@ From `run/`, launch everything with one command:
 It creates `tmp/only-codex`, `tmp/codex-ollama`, `tmp/qwen-9b`, and
 `tmp/qwen-27b`. Each contains `app/` (the resulting application worktree),
 the immutable `prompt.md`, `agent.json` or `agent.jsonl`, and `metadata.json`.
-The script refuses to overwrite an existing `tmp` benchmark. The defaults
-allow 80 Qwen turns and 90 minutes per trial; adjust them only for all trials if
-you need a different budget:
+`tmp/` is the reusable benchmark container. The script refuses to overwrite an
+existing trial directory within it, so a previous result is preserved. The
+defaults allow 80 Qwen turns and 90 minutes per trial; adjust them only for all
+trials if you need a different budget:
 
 ```sh
 ./benchmark-instagram.sh --turns 80 --wall-time 90m

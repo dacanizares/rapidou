@@ -4,6 +4,7 @@ set -euo pipefail
 rapidou_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 prompt_file="$rapidou_root/ai/benchmarks/instagram-like-prompt.md"
 output_root="$rapidou_root/tmp"
+default_output=true
 selection="all"
 turns=80
 wall_time=90m
@@ -16,8 +17,9 @@ usage: run/benchmark-instagram.sh [options]
 
 Runs comparable isolated Instagram-like application builds.
 
-  --output DIRECTORY     New directory that will receive one Git worktree per trial
-                         (default: tmp/ at the Rapidou repository root).
+  --output DIRECTORY     New directory that will receive one Git worktree per trial.
+                         By default, each trial is created beneath tmp/ at the
+                         Rapidou repository root.
   --run NAME             all (default), codex, codex-oss-qwen27b, qwen-9b, or qwen-27b.
   --prepare              Pull both local Ollama models and exit; setup time is not measured.
   --turns NUMBER         Maximum agent turns per Qwen trial (default: 80).
@@ -151,6 +153,7 @@ while [[ $# -gt 0 ]]; do
         --output)
             [[ $# -ge 2 && -n "$2" ]] || { usage >&2; exit 2; }
             output_root="$2"
+            default_output=false
             shift 2
             ;;
         --run)
@@ -183,7 +186,24 @@ if [[ "$prepare" == true ]]; then
     prepare_models
     exit 0
 fi
-[[ ! -e "$output_root" ]] || { echo "error: output directory already exists: $output_root" >&2; exit 2; }
+if [[ "$default_output" == true ]]; then
+    mkdir -p "$output_root"
+    case "$selection" in
+        all) requested_trials=(only-codex codex-ollama qwen-9b qwen-27b) ;;
+        codex) requested_trials=(only-codex) ;;
+        codex-oss-qwen27b) requested_trials=(codex-ollama) ;;
+        qwen-9b) requested_trials=(qwen-9b) ;;
+        qwen-27b) requested_trials=(qwen-27b) ;;
+    esac
+    for trial in "${requested_trials[@]}"; do
+        [[ ! -e "$output_root/$trial" ]] || {
+            echo "error: trial output already exists: $output_root/$trial" >&2
+            exit 2
+        }
+    done
+else
+    [[ ! -e "$output_root" ]] || { echo "error: output directory already exists: $output_root" >&2; exit 2; }
+fi
 need git
 need python3
 if [[ "$selection" == all || "$selection" == qwen-9b || "$selection" == qwen-27b || "$selection" == codex-oss-qwen27b ]]; then
