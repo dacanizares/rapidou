@@ -1,5 +1,7 @@
 # Rapidou
 
+![Rapidou](rapidou.png)
+
 Rapidou is a deliberately small foundation for building **Any Application™*** with Codex or Claude. It combines an opinionated Go/SQLite/plain-JavaScript base, authentication, a real Docker/Chromium functional harness, concise specifications, and reusable agent skills.
 
 It is installed inside an application repository as `lib/rapidou`. The AI uses its example, rules, skills, and tests to implement the requested product in the parent repository.
