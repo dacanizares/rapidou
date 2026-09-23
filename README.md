@@ -24,6 +24,8 @@ Run the complete functional contract and build the single binary with:
 
 `./run/test` is the mandatory completion gate. It builds the Dockerfile `functional-test` target with Chromium and executes both the API contract and the complete click-driven browser journey; a skipped UI test is a failure, not an acceptable result. Docker is selected first and Podman is supported as a Docker-compatible fallback. Production startup requires an explicit `APP_JWT_SECRET`; the defaults above exist only in `run/dev`.
 
+Project documentation is routed through [`docs/index.md`](docs/index.md). Reusable agent workflows live under [`ai/skills/`](ai/skills/index.md); `craft` drives a request from spec through two functional-test gates. Every independent agent must first use `select-agent-model` and the delegation hook described in `AGENTS.md`.
+
 Build this application with extreme simplicity as the primary architectural constraint.
 
 The application must remain plain, direct, small, and easy for both humans and machines to understand.

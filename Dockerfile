@@ -14,6 +14,9 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY src ./src
 COPY tst ./tst
+COPY ai ./ai
+COPY docs ./docs
+COPY AGENTS.md README.md ./
 CMD ["go", "test", "./...", "-v", "-count=1"]
 
 FROM ubuntu:24.04

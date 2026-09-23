@@ -52,10 +52,13 @@ project/
 │           ├── sample-data.sql
 │           └── ...
 │
-├── doc/
-│   ├── spec.md
-│   ├── plan.md
-│   └── ...
+├── docs/
+│   ├── index.md
+│   ├── shared/
+│   ├── backend/
+│   ├── frontend/
+│   ├── specs/
+│   └── harness/
 │
 ├── ai/
 │   ├── skills/
@@ -547,17 +550,17 @@ Prefer shell scripts.
 Example:
 
 ```text
-run/dev.sh
-run/build.sh
-run/test.sh
-run/docker.sh
+run/dev
+run/build
+run/test
+run/docker
 ```
 
 Do not create elaborate task runners or build systems unless required.
 
 ---
 
-## `run/dev.sh`
+## `run/dev`
 
 Starts the application for local development.
 
@@ -576,7 +579,7 @@ Do not hide important development behavior behind tooling.
 
 ---
 
-## `run/build.sh`
+## `run/build`
 
 Builds the application.
 
@@ -601,7 +604,7 @@ bin/
 
 ---
 
-## `run/test.sh`
+## `run/test`
 
 Runs all functional tests.
 
@@ -618,7 +621,7 @@ The final test command must build a Docker test target containing Chrome/Chromiu
 
 ---
 
-## `run/docker.sh`
+## `run/docker`
 
 Builds or runs the Docker image.
 
@@ -736,7 +739,7 @@ The goal is to avoid adopting migration infrastructure before it is useful.
 
 ---
 
-# `doc/`
+# `docs/`
 
 Contains specifications, decisions and plans.
 
@@ -748,18 +751,22 @@ Do not create documentation merely because a process says a document should exis
 
 Prefer a few living documents over many templates.
 
-Typical files:
+Route documentation through a small index:
 
 ```text
-doc/spec.md
-doc/plan.md
+docs/index.md
+docs/shared/
+docs/backend/
+docs/frontend/
+docs/specs/
+docs/harness/
 ```
 
 Additional documents may be created when a real feature or decision requires them.
 
 ---
 
-## `doc/spec.md`
+## `docs/specs/`
 
 Defines what the application currently needs to do.
 
@@ -803,33 +810,7 @@ over abstract architectural language.
 
 ---
 
-## `doc/plan.md`
-
-Contains the current implementation plan.
-
-Keep it short and alive.
-
-Example:
-
-```markdown
-# Current plan
-
-1. Login endpoint.
-2. JWT authentication.
-3. Users CRUD.
-4. Users UI.
-5. API functional tests.
-6. UI happy-path test.
-7. UI common-error tests.
-```
-
-Plans are working notes.
-
-They are not contracts.
-
-They may be changed whenever reality changes.
-
-No project-management ceremony is implied.
+For normal feature work, the concise behavioral spec is also the plan. Do not create a second planning document.
 
 ---
 
@@ -874,14 +855,13 @@ Contains reusable task instructions.
 
 Skills should teach the AI how to perform recurring operations in this project.
 
-Examples:
+Each skill is a standard skill directory:
 
 ```text
-ai/skills/add-api-endpoint.md
-ai/skills/add-ui-flow.md
-ai/skills/add-functional-test.md
-ai/skills/change-database.md
-ai/skills/debug.md
+ai/skills/spec/SKILL.md
+ai/skills/backend/SKILL.md
+ai/skills/frontend/SKILL.md
+ai/skills/craft/SKILL.md
 ```
 
 Skills should be short, procedural, and direct.
@@ -1063,38 +1043,18 @@ Documentation and planning exist to support this flow, not control it.
 For a normal feature:
 
 ```text
-1. Read the relevant spec.
-
-2. Inspect the current implementation.
-
-3. Implement the simplest complete behavior.
-
-4. Use:
-   structs
-   functions
-   direct calls
-   plain SQL
-   plain JS
-   plain CSS
-
-5. Add functional API tests when API behavior changed.
-
-6. Add UI flow tests when user-visible behavior changed.
-
-7. Test:
-   happy path
-   realistic common mistakes
-
-8. Run:
-   run/test.sh
-
-9. Run:
-   run/build.sh
-
-10. Update documentation only where reality changed.
+prompt
+→ direct behavioral spec (the plan)
+→ material questions, one at a time
+→ model selection hook before each independent agent
+→ backend/frontend implementation with functional tests
+→ complete Docker/Chromium gate
+→ fresh independent code review
+→ smallest valid fixes
+→ complete Docker/Chromium gate again
 ```
 
-No additional ceremony is required.
+Use structs, functions, direct calls, plain SQL, plain JavaScript, and plain CSS. No additional ceremony is required.
 
 ---
 

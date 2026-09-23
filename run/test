@@ -12,7 +12,24 @@ else
     exit 1
 fi
 
+case "$(basename "$engine")" in
+    docker|podman) ;;
+    *)
+        echo "error: CONTAINER_ENGINE must resolve to Docker or Podman" >&2
+        exit 1
+        ;;
+esac
+
 image="rapidou-functional-test"
+test_log="$(mktemp)"
+trap 'rm -f "$test_log"' EXIT
 
 "$engine" build --target functional-test -t "$image" .
-"$engine" run --rm --shm-size=256m "$image"
+"$engine" run --rm --shm-size=256m "$image" | tee "$test_log"
+
+for required in "--- PASS: TestAPI" "--- PASS: TestUI" "--- PASS: TestSampleMuseum" "--- PASS: TestDelegationWorkflow"; do
+    if ! grep -Fq -- "$required" "$test_log"; then
+        echo "error: mandatory functional result is missing: $required" >&2
+        exit 1
+    fi
+done

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rapidou Backend"
+  short_description: "Build direct Go and SQLite backend changes"
+  default_prompt: "Use $backend to implement the backend portion of the current specification and its functional tests."

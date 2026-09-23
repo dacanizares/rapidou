@@ -1,0 +1,4 @@
+interface:
+  display_name: "Select Agent Model"
+  short_description: "Choose model and reasoning for delegated tasks"
+  default_prompt: "Use $select-agent-model before delegating a task to choose its model and reasoning effort."

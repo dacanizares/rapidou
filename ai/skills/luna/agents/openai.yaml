@@ -1,0 +1,4 @@
+interface:
+  display_name: "Luna Code Search"
+  short_description: "Delegate focused read-only repository searches"
+  default_prompt: "Use $luna to locate the code and documents relevant to this request."

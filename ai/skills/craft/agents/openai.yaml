@@ -1,0 +1,4 @@
+interface:
+  display_name: "Craft Feature"
+  short_description: "Drive a feature from prompt through final tests"
+  default_prompt: "Use $craft to implement this feature from direct specification through review and final Docker tests."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Run Functional Tests"
+  short_description: "Run the mandatory Docker Chromium gate"
+  default_prompt: "Use $run-functional-tests to execute and report the complete containerized functional test gate."

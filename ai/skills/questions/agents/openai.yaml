@@ -1,0 +1,4 @@
+interface:
+  display_name: "One-by-One Questions"
+  short_description: "Resolve only material specification gaps"
+  default_prompt: "Use $questions to resolve any material gaps in the current specification one at a time."

@@ -23,3 +23,13 @@ git submodule update --init --recursive
 `./run/test` is the mandatory completion gate for every implementation change. It selects Docker first and Podman only as a Docker-compatible fallback, builds the `functional-test` target, and runs the complete API and browser journeys inside that container. A host-only `go test`, an API-only result, or a skipped UI test does not satisfy the gate.
 
 The consuming application owns `.gitmodules` and the gitlink that pins Rapidou. This repository does not contain a nested submodule.
+
+## Agent workflow
+
+Reusable workflow skills live under `ai/skills/` and are indexed at `ai/skills/index.md`. Before every independent agent spawn, read `select-agent-model` and run:
+
+```sh
+./ai/hooks/prepare-agent.sh select-agent-model <complexity> <size>
+```
+
+The returned model and reasoning effort are mandatory for that spawn. This applies to parallel work, sequential work, Luna searches, and code review. `craft` owns the complete spec → questions → backend/frontend → test → review → retest sequence.

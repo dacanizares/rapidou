@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rapidou Frontend"
+  short_description: "Build plain browser UI and Chromium tests"
+  default_prompt: "Use $frontend to implement the frontend portion of the current specification and its Chromium tests."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Direct Specification"
+  short_description: "Write concise behavioral specs and test cases"
+  default_prompt: "Use $spec to turn this request into a direct behavioral specification with tests."

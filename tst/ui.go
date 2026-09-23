@@ -14,7 +14,7 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-// RunUI executes one high-value browser journey. It skips when Chrome is absent.
+// RunUI executes one high-value browser journey and fails when Chrome is absent.
 func RunUI(t *testing.T, factory Factory, credentials Credentials) {
 	t.Helper()
 	browserPath := browserExecutable()
