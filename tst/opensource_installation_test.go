@@ -195,6 +195,50 @@ esac
 	}
 }
 
+func TestOpenSourceInstallerAvoidsLargeModelOnSmallGPU(t *testing.T) {
+	root, err := filepath.Abs("..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	home := t.TempDir()
+	bin := filepath.Join(t.TempDir(), "bin")
+	if err := os.MkdirAll(bin, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	writeExecutable(t, filepath.Join(bin, "curl"), "#!/bin/sh\nprintf '{}\\n'\n")
+	writeExecutable(t, filepath.Join(bin, "nvidia-smi"), "#!/bin/sh\necho 16384\n")
+	writeExecutable(t, filepath.Join(bin, "ollama"), `#!/bin/sh
+case "$1" in
+  --version) echo "ollama version 0.test" ;;
+  list) printf 'NAME ID SIZE MODIFIED\nqwen3.5:9b abc 6.6GB now\n' ;;
+  pull) echo "unexpected pull" >&2; exit 9 ;;
+  *) exit 0 ;;
+esac
+`)
+	writeExecutable(t, filepath.Join(bin, "qwen"), `#!/bin/sh
+if [ "$1" = "--version" ]; then
+  echo "0.test"
+else
+  printf '[{"type":"result","subtype":"success","result":"RAPIDOU_OK"}]\n'
+fi
+`)
+
+	installer := filepath.Join(root, "run", "install-opensource.sh")
+	command := exec.Command(installer)
+	command.Env = append(os.Environ(),
+		"HOME="+home,
+		"PATH="+bin+":/usr/bin:/bin",
+	)
+	output, err := command.CombinedOutput()
+	if err != nil {
+		t.Fatalf("open-source installer failed: %v: %s", err, output)
+	}
+	if !strings.Contains(string(output), "Model: qwen3.5:9b") {
+		t.Fatalf("installer did not select the GPU-fitting model: %s", output)
+	}
+}
+
 func writeExecutable(t *testing.T, path, contents string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(strings.TrimSpace(contents)+"\n"), 0o755); err != nil {

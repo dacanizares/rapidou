@@ -121,8 +121,26 @@ detect_ram_gib() {
     fi
 }
 
+detect_vram_gib() {
+    local mib bytes
+    if command -v nvidia-smi >/dev/null 2>&1; then
+        mib="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | awk '{sum += $1} END {print sum}')"
+        if [[ "$mib" =~ ^[0-9]+$ ]] && (( mib > 0 )); then
+            echo $(( (mib + 1023) / 1024 ))
+            return
+        fi
+    elif command -v rocm-smi >/dev/null 2>&1; then
+        bytes="$(rocm-smi --showmeminfo vram 2>/dev/null | awk -F: '/VRAM Total Memory/ {sum += $NF} END {printf "%.0f", sum}')"
+        if [[ "$bytes" =~ ^[0-9]+$ ]] && (( bytes > 0 )); then
+            echo $(( (bytes + 1073741823) / 1073741824 ))
+            return
+        fi
+    fi
+    echo 0
+}
+
 select_model() {
-    local ram="$1"
+    local ram="$1" vram="$2"
     if [[ -n "$requested_model" ]]; then
         printf '%s\n' "$requested_model"
     elif (( ram < 6 )); then
@@ -133,7 +151,9 @@ select_model() {
         echo "qwen3.5:4b"
     elif (( ram < 28 )); then
         echo "qwen3.5:9b"
-    elif (( ram < 56 )); then
+    elif (( vram > 0 && vram < 24 )); then
+        echo "qwen3.5:9b"
+    elif (( ram < 56 || vram < 32 )); then
         echo "qwen3.8:27b"
     else
         echo "qwen3.8:27b-q8_0"
@@ -186,13 +206,19 @@ fi
 need qwen
 
 ram_gib="$(detect_ram_gib)"
-model="$(select_model "$ram_gib")"
+vram_gib="$(detect_vram_gib)"
+model="$(select_model "$ram_gib" "$vram_gib")"
 context_window="$(context_window_for "$model")"
 
 echo
 echo "Detected hardware:"
 echo "  RAM: ${ram_gib} GiB"
 report_gpu
+if (( vram_gib > 0 )); then
+    echo "  GPU memory: ${vram_gib} GiB"
+else
+    echo "  GPU memory: not detected"
+fi
 echo "  Model: $model"
 echo "  Context: $context_window tokens"
 
