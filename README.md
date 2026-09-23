@@ -13,11 +13,11 @@ It is installed inside an application repository as `lib/rapidou`. The AI uses i
 From the new application repository:
 
 ```sh
-git submodule add <rapidou-repository-url> lib/rapidou
+git submodule add https://github.com/dacanizares/rapidou lib/rapidou
 ./lib/rapidou/run/install.sh
 ```
 
-Restart Codex or Claude. In Codex, open `/hooks` once and trust the project hook. Then describe the application in normal language.
+Restart Codex or Claude after installation. If you use Codex, type `/hooks` and trust the project hook when prompted; you only need to do this once. Then describe the application you want to build in plain language.
 
 ### Example prompt
 
