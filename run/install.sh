@@ -51,6 +51,8 @@ check_config() {
     local destination="$1"
     local expected="$2"
     local platform="$3"
+    local matcher="Agent"
+    [[ "$platform" == "qwen" ]] && matcher="agent"
     if [[ -L "$destination" ]]; then
         if [[ "$(readlink "$destination")" != "$expected" ]]; then
             echo "error: existing configuration link has a different target: $destination" >&2
@@ -61,7 +63,7 @@ check_config() {
             echo "error: $destination already exists; merge the Rapidou PreToolUse entry, then rerun with --accept-existing-hooks" >&2
             exit 2
         fi
-        for required in '"PreToolUse"' '"matcher": "Agent"' 'lib/rapidou/ai/hooks/enforce-agent-selection.sh' "$platform"; do
+        for required in '"PreToolUse"' "\"matcher\": \"$matcher\"" 'lib/rapidou/ai/hooks/enforce-agent-selection.sh' "$platform"; do
             if ! grep -Fq "$required" "$destination"; then
                 echo "error: existing configuration is missing Rapidou hook data: $destination" >&2
                 exit 2
@@ -76,9 +78,11 @@ check_config() {
 for skill in "${skills[@]}"; do
     check_link "$project_root/.agents/skills/$skill" "../../lib/rapidou/ai/skills/$skill"
     check_link "$project_root/.claude/skills/$skill" "../../lib/rapidou/ai/skills/$skill"
+    check_link "$project_root/.qwen/skills/$skill" "../../lib/rapidou/ai/skills/$skill"
 done
 check_config "$project_root/.codex/hooks.json" "../lib/rapidou/ai/install/codex-hooks.json" codex
 check_config "$project_root/.claude/settings.json" "../lib/rapidou/ai/install/claude-settings.json" claude
+check_config "$project_root/.qwen/settings.json" "../lib/rapidou/ai/install/qwen-settings.json" qwen
 
 agents_start='<!-- rapidou:start -->'
 agents_end='<!-- rapidou:end -->'
@@ -93,13 +97,15 @@ if [[ -f "$project_root/CLAUDE.md" ]] && grep -Fq "$claude_start" "$project_root
     exit 2
 fi
 
-mkdir -p "$project_root/.agents/skills" "$project_root/.claude/skills" "$project_root/.codex"
+mkdir -p "$project_root/.agents/skills" "$project_root/.claude/skills" "$project_root/.qwen/skills" "$project_root/.codex"
 for skill in "${skills[@]}"; do
     [[ -L "$project_root/.agents/skills/$skill" ]] || ln -s "../../lib/rapidou/ai/skills/$skill" "$project_root/.agents/skills/$skill"
     [[ -L "$project_root/.claude/skills/$skill" ]] || ln -s "../../lib/rapidou/ai/skills/$skill" "$project_root/.claude/skills/$skill"
+    [[ -L "$project_root/.qwen/skills/$skill" ]] || ln -s "../../lib/rapidou/ai/skills/$skill" "$project_root/.qwen/skills/$skill"
 done
 [[ -e "$project_root/.codex/hooks.json" ]] || ln -s "../lib/rapidou/ai/install/codex-hooks.json" "$project_root/.codex/hooks.json"
 [[ -e "$project_root/.claude/settings.json" ]] || ln -s "../lib/rapidou/ai/install/claude-settings.json" "$project_root/.claude/settings.json"
+[[ -e "$project_root/.qwen/settings.json" ]] || ln -s "../lib/rapidou/ai/install/qwen-settings.json" "$project_root/.qwen/settings.json"
 
 if [[ -f "$project_root/AGENTS.md" ]] && grep -Fq "$agents_start" "$project_root/AGENTS.md"; then
     :
@@ -108,7 +114,7 @@ else
         printf '\n%s\n' "$agents_start"
         printf '## Rapidou\n\n'
         printf 'Rapidou is installed at `lib/rapidou`. Read `lib/rapidou/docs/index.md` and use the `craft` skill for implementation work.\n\n'
-        printf 'Before every independent subagent, read `select-agent-model` and run `./lib/rapidou/ai/hooks/prepare-agent.sh select-agent-model <codex|claude> <complexity> <size>`. Use the exact returned model and, for Codex, reasoning effort.\n\n'
+        printf 'Before every independent subagent, read `select-agent-model` and run `./lib/rapidou/ai/hooks/prepare-agent.sh select-agent-model <codex|claude|qwen> <complexity> <size>`. Codex and Claude use the exact returned model; Qwen uses its active model.\n\n'
         printf 'The consuming application must own its Docker/Chromium `./run/test.sh` completion gate. `lib/rapidou/src/` is the executable base example, not application-owned source.\n'
         printf '%s\n' "$agents_end"
     } >> "$project_root/AGENTS.md"
@@ -124,6 +130,6 @@ else
     } >> "$project_root/CLAUDE.md"
 fi
 
-printf 'Rapidou installed for Codex and Claude in %s\n' "$project_root"
-printf 'Restart both clients; in Codex, open /hooks and trust the project hook.\n'
+printf 'Rapidou installed for Codex, Claude Code, and Qwen Code in %s\n' "$project_root"
+printf 'Restart the clients; in Codex, open /hooks and trust the project hook.\n'
 printf 'Next: adapt lib/rapidou/src/ as the base example and make the application own ./run/test.sh.\n'

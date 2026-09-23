@@ -4,14 +4,14 @@
 
 - A human opens `README.md` and quickly understands what Rapidou is, how to install it at `lib/rapidou`, and what prompt starts a new application.
 - The README shows one concrete, visually directed application prompt and labels it as an example rather than a required template.
-- Codex or Claude reads `AGENTS.md`/`CLAUDE.md` for mandatory operating rules, then follows `docs/index.md` only to the context required by the task.
+- Claude Code, Codex, or Qwen Code reads the canonical `AGENTS.md` instructions, then follows `docs/index.md` only to the context required by the task.
 - Detailed stack, architecture, frontend, backend, authentication, database, testing, organization, and decision rules remain available under `docs/` without being duplicated in the README.
 - The Museo Pixel credentials and local commands remain documented as an example, while `src/` is clearly not application-owned source in a consuming repository.
 
 ## Expected mistakes
 
 - Installing the submodule without running `run/install.sh` leaves client discovery incomplete; the README must show both steps.
-- Treating Rapidou as a code generator executable is corrected by showing that Codex or Claude runs the `craft` workflow from a prompt.
+- Treating Rapidou as a code generator executable is corrected by showing that the selected coding agent runs the `craft` workflow from a prompt.
 - Copying the example subject or visual language by default is prevented by stating that both belong to the example only.
 - Treating the museum as required product behavior is corrected by identifying it as the replaceable base example.
 

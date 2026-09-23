@@ -14,9 +14,9 @@ Run those focused checks with `./run/installation_test.sh`. This fast command do
 - `craft` receives a feature or bug-fix prompt and uses `spec` to update a concise observable-behavior contract; that spec is the plan.
 - The spec names the happy path, realistic user mistakes, expected errors, and required functional coverage.
 - `questions` resolves only material gaps, one question at a time, before implementation.
-- Before every independent agent, the parent invokes `select-agent-model`, classifies complexity and size, and runs `ai/hooks/prepare-agent.sh` for Codex or Claude.
-- The selector returns the exact platform model and, for Codex, reasoning effort. This applies to parallel and sequential agents, Luna searches, and reviews.
-- Codex and Claude `PreToolUse` hooks intercept their `Agent` tool and consume one matching selection. `AGENTS.md` remains the readable policy.
+- Before every independent agent, the parent invokes `select-agent-model`, classifies complexity and size, and runs `ai/hooks/prepare-agent.sh` for Codex, Claude, or Qwen.
+- The selector returns the exact platform model and, for Codex, reasoning effort. Qwen returns `inherit` because its native agent call does not accept a per-call model. This applies to parallel and sequential agents, Luna searches, and reviews.
+- Native `PreToolUse` hooks intercept each client's agent tool and consume one matching selection. `AGENTS.md` remains the readable policy.
 - Backend and frontend agents read their domain indexes, implement only their owned scope, and add the corresponding API or click-driven browser tests.
 - `run-functional-tests` runs the complete Docker/Chromium gate after implementation.
 - A fresh independent `code-review` agent reviews the spec, diff, tests, and simplicity rules without editing.

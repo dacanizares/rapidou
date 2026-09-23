@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [[ $# -ne 4 || "$1" != "select-agent-model" ]]; then
-    echo "usage: $0 select-agent-model <codex|claude> <low|medium|high> <small|medium|large>" >&2
+    echo "usage: $0 select-agent-model <codex|claude|qwen> <low|medium|high> <small|medium|large>" >&2
     echo "read ai/skills/select-agent-model/SKILL.md before invoking this hook" >&2
     exit 2
 fi
@@ -54,6 +54,17 @@ case "$platform" in
                 ;;
             medium:large|high:small|high:medium|high:large)
                 model="opus"
+                ;;
+            *)
+                echo "invalid classification: complexity=$complexity size=$size" >&2
+                exit 2
+                ;;
+        esac
+        ;;
+    qwen)
+        case "$complexity:$size" in
+            low:small|low:medium|low:large|medium:small|medium:medium|medium:large|high:small|high:medium|high:large)
+                model="inherit"
                 ;;
             *)
                 echo "invalid classification: complexity=$complexity size=$size" >&2

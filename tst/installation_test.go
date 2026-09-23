@@ -19,7 +19,7 @@ func TestDelegationWorkflow(t *testing.T) {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("required workflow skill %s is unavailable: %v", name, err)
 		}
-		for _, clientDirectory := range []string{".agents", ".claude"} {
+		for _, clientDirectory := range []string{".agents", ".claude", ".qwen"} {
 			discovered := filepath.Join(root, clientDirectory, "skills", name, "SKILL.md")
 			if _, err := os.Stat(discovered); err != nil {
 				t.Fatalf("%s cannot discover skill %s: %v", clientDirectory, name, err)
@@ -29,6 +29,7 @@ func TestDelegationWorkflow(t *testing.T) {
 	for _, path := range []string{
 		filepath.Join(root, ".codex", "hooks.json"),
 		filepath.Join(root, ".claude", "settings.json"),
+		filepath.Join(root, ".qwen", "settings.json"),
 		filepath.Join(root, "CLAUDE.md"),
 	} {
 		if _, err := os.Stat(path); err != nil {
@@ -73,6 +74,9 @@ func TestDelegationWorkflow(t *testing.T) {
 		{"claude", "high", "small", "opus", ""},
 		{"claude", "high", "medium", "opus", ""},
 		{"claude", "high", "large", "opus", ""},
+		{"qwen", "low", "small", "inherit", ""},
+		{"qwen", "medium", "medium", "inherit", ""},
+		{"qwen", "high", "large", "inherit", ""},
 	}
 	for _, test := range cases {
 		command := exec.Command(selector, "select-agent-model", test.platform, test.complexity, test.size)
@@ -105,6 +109,7 @@ func TestDelegationWorkflow(t *testing.T) {
 
 	testSpawnGuard(t, root, selector, selectionDir, "codex", "gpt-5.6-sol", "high", "medium", "xhigh")
 	testSpawnGuard(t, root, selector, selectionDir, "claude", "sonnet", "medium", "medium", "")
+	testSpawnGuard(t, root, selector, selectionDir, "qwen", "inherit", "medium", "medium", "")
 }
 
 func testSpawnGuard(t *testing.T, root, selector, selectionDir, platform, model, complexity, size, reasoning string) {
@@ -116,19 +121,24 @@ func testSpawnGuard(t *testing.T, root, selector, selectionDir, platform, model,
 	}
 
 	enforcer := filepath.Join(root, "ai", "hooks", "enforce-agent-selection.sh")
-	wrong := exec.Command(enforcer, platform)
-	wrong.Env = append(os.Environ(), "RAPIDOU_SELECTION_DIR="+selectionDir)
-	wrong.Stdin = strings.NewReader(`{"tool_name":"spawn_agent","tool_input":{"model":"wrong"}}`)
-	if output, err := wrong.CombinedOutput(); err == nil {
-		t.Fatalf("%s guard accepted the wrong model: %s", platform, output)
-	}
-	selectCommand = exec.Command(selector, "select-agent-model", platform, complexity, size)
-	selectCommand.Env = append(os.Environ(), "RAPIDOU_SELECTION_DIR="+selectionDir)
-	if output, err := selectCommand.CombinedOutput(); err != nil {
-		t.Fatalf("prepare replacement %s selection: %v: %s", platform, err, output)
+	if platform != "qwen" {
+		wrong := exec.Command(enforcer, platform)
+		wrong.Env = append(os.Environ(), "RAPIDOU_SELECTION_DIR="+selectionDir)
+		wrong.Stdin = strings.NewReader(`{"tool_name":"spawn_agent","tool_input":{"model":"wrong"}}`)
+		if output, err := wrong.CombinedOutput(); err == nil {
+			t.Fatalf("%s guard accepted the wrong model: %s", platform, output)
+		}
+		selectCommand = exec.Command(selector, "select-agent-model", platform, complexity, size)
+		selectCommand.Env = append(os.Environ(), "RAPIDOU_SELECTION_DIR="+selectionDir)
+		if output, err := selectCommand.CombinedOutput(); err != nil {
+			t.Fatalf("prepare replacement %s selection: %v: %s", platform, err, output)
+		}
 	}
 
-	payload := `{"tool_name":"spawn_agent","tool_input":{"model":"` + model + `"`
+	payload := `{"tool_name":"spawn_agent","tool_input":{`
+	if platform != "qwen" {
+		payload += `"model":"` + model + `"`
+	}
 	if reasoning != "" {
 		payload += `,"reasoning_effort":"` + reasoning + `"`
 	}
@@ -207,7 +217,7 @@ func TestInstall(t *testing.T) {
 		}
 	}
 
-	for _, directory := range []string{".agents", ".claude"} {
+	for _, directory := range []string{".agents", ".claude", ".qwen"} {
 		target, err := os.Readlink(filepath.Join(project, directory, "skills", "craft"))
 		if err != nil {
 			t.Fatalf("read %s craft link: %v", directory, err)
@@ -219,6 +229,7 @@ func TestInstall(t *testing.T) {
 	for path, target := range map[string]string{
 		filepath.Join(".codex", "hooks.json"):     "../lib/rapidou/ai/install/codex-hooks.json",
 		filepath.Join(".claude", "settings.json"): "../lib/rapidou/ai/install/claude-settings.json",
+		filepath.Join(".qwen", "settings.json"):   "../lib/rapidou/ai/install/qwen-settings.json",
 	} {
 		got, err := os.Readlink(filepath.Join(project, path))
 		if err != nil {
@@ -255,7 +266,7 @@ func TestInstall(t *testing.T) {
 	}
 
 	mergedProject := t.TempDir()
-	for _, directory := range []string{filepath.Join("lib"), filepath.Join(".codex"), filepath.Join(".claude")} {
+	for _, directory := range []string{filepath.Join("lib"), filepath.Join(".codex"), filepath.Join(".claude"), filepath.Join(".qwen")} {
 		if err := os.MkdirAll(filepath.Join(mergedProject, directory), 0o755); err != nil {
 			t.Fatal(err)
 		}
@@ -266,6 +277,7 @@ func TestInstall(t *testing.T) {
 	for source, destination := range map[string]string{
 		filepath.Join(root, "ai", "install", "codex-hooks.json"):     filepath.Join(mergedProject, ".codex", "hooks.json"),
 		filepath.Join(root, "ai", "install", "claude-settings.json"): filepath.Join(mergedProject, ".claude", "settings.json"),
+		filepath.Join(root, "ai", "install", "qwen-settings.json"):   filepath.Join(mergedProject, ".qwen", "settings.json"),
 	} {
 		contents, err := os.ReadFile(source)
 		if err != nil {
@@ -342,7 +354,7 @@ func TestDocumentationRoutes(t *testing.T) {
 	for _, path := range []string{
 		"README.md", "docs/index.md", "docs/installation.md", "docs/example.md",
 		"docs/shared/index.md", "docs/shared/principles.md", "docs/specs/index.md",
-		"docs/harness/index.md",
+		"docs/harness/index.md", "docs/agents.md",
 	} {
 		assertLocalMarkdownLinksResolve(t, root, path)
 	}

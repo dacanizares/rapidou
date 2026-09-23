@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 1 || ( "$1" != "codex" && "$1" != "claude" ) ]]; then
-    echo "usage: $0 <codex|claude>" >&2
+if [[ $# -ne 1 || ( "$1" != "codex" && "$1" != "claude" && "$1" != "qwen" ) ]]; then
+    echo "usage: $0 <codex|claude|qwen>" >&2
     exit 2
 fi
 
@@ -57,7 +57,11 @@ if [[ "$tool_input" == "$payload" ]]; then
     echo "Rapidou blocked the subagent: hook input has no tool_input." >&2
     exit 2
 fi
-if [[ "$platform" != "$expected_platform" || "$tool_input" != *"\"model\":\"$model\""* ]]; then
+if [[ "$platform" != "$expected_platform" ]]; then
+    echo "Rapidou blocked the subagent: selection was prepared for $platform, not $expected_platform." >&2
+    exit 2
+fi
+if [[ "$expected_platform" != "qwen" && "$tool_input" != *"\"model\":\"$model\""* ]]; then
     echo "Rapidou blocked the subagent: use the exact selected model $model for $expected_platform." >&2
     exit 2
 fi

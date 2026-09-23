@@ -2,7 +2,7 @@
 
 ![Rapidou](rapidou.png)
 
-Rapidou is a deliberately small foundation for building **Any Application™*** with Codex or Claude. It combines an opinionated Go/SQLite/plain-JavaScript base, authentication, a real Docker/Chromium functional harness, concise specifications, and reusable agent skills.
+Rapidou is a deliberately small foundation for building **Any Application™*** with Claude Code, Codex, or Qwen Code. It combines an opinionated Go/SQLite/plain-JavaScript base, authentication, a real Docker/Chromium functional harness, concise specifications, and reusable agent skills.
 
 It is installed inside an application repository as `lib/rapidou`. The AI uses its example, rules, skills, and tests to implement the requested product in the parent repository.
 
@@ -17,7 +17,13 @@ git submodule add https://github.com/dacanizares/rapidou lib/rapidou
 ./lib/rapidou/run/install.sh
 ```
 
-Restart Codex or Claude after installation. If you use Codex, type `/hooks` and trust the project hook when prompted; you only need to do this once. Then describe the application you want to build in plain language.
+Restart your coding agent after installation. If you use Codex, type `/hooks` and trust the project hook when prompted; you only need to do this once. Then describe the application you want to build in plain language.
+
+For a fully local Qwen Code and Ollama stack with no paid subscription:
+
+```sh
+./lib/rapidou/run/install-opensource.sh
+```
 
 ### Example prompt
 
@@ -70,4 +76,4 @@ The included [Museo Pixel example](docs/example.md) demonstrates authentication,
 - [Harness and agent workflow](docs/harness/index.md)
 - [Current specifications](docs/specs/index.md)
 
-Mandatory instructions for coding agents live in [`AGENTS.md`](AGENTS.md). Claude loads the same source through [`CLAUDE.md`](CLAUDE.md).
+Mandatory instructions for coding agents live in [`AGENTS.md`](AGENTS.md); [`CLAUDE.md`](CLAUDE.md) remains a tiny compatibility import. The same canonical skills are exposed to all three clients; see [agent compatibility](docs/agents.md).

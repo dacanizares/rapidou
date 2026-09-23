@@ -22,8 +22,8 @@ Before spawning any independent agent, sequentially or in parallel:
 
 1. Read and invoke `ai/skills/select-agent-model/SKILL.md`.
 2. Classify the subtask by complexity and size.
-3. Identify the active client and run `./ai/hooks/prepare-agent.sh select-agent-model <codex|claude> <complexity> <size>`.
-4. Use the exact model returned by the hook and, for Codex, its reasoning effort.
+3. Identify the active client and run `./ai/hooks/prepare-agent.sh select-agent-model <codex|claude|qwen> <complexity> <size>`.
+4. Codex and Claude use the exact returned model; Codex also uses its reasoning effort. Qwen uses its active model because its native agent call has no per-call model field.
 5. Give the agent a bounded task, required skill, context paths, and file ownership.
 
 The client `PreToolUse` hook blocks an agent spawn without a fresh matching selection. There are no exceptions for read-only searches or reviews. Use `ai/skills/luna/SKILL.md` for delegated code search. Use `ai/skills/craft/SKILL.md` for end-to-end feature work.

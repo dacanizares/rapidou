@@ -27,10 +27,10 @@ The consuming application owns `.gitmodules` and the gitlink that pins Rapidou. 
 
 ## Agent workflow
 
-Reusable workflow skills live under `ai/skills/` and are indexed at `ai/skills/index.md`. The installer links them into both clients' discovery directories. Before every independent agent spawn, read `select-agent-model` and run:
+Reusable workflow skills live under `ai/skills/` and are indexed at `ai/skills/index.md`. The installer links them into all three clients' discovery directories. Before every independent agent spawn, read `select-agent-model` and run:
 
 ```sh
-./ai/hooks/prepare-agent.sh select-agent-model <codex|claude> <complexity> <size>
+./ai/hooks/prepare-agent.sh select-agent-model <codex|claude|qwen> <complexity> <size>
 ```
 
-The returned model and, for Codex, reasoning effort are mandatory for that spawn. A one-shot client hook enforces the selection. This applies to parallel work, sequential work, Luna searches, and code review. `craft` owns the complete spec → questions → backend/frontend → test → review → retest sequence.
+Codex and Claude use the returned model; Codex also uses its reasoning effort. Qwen returns `inherit` because its native agent tool has no per-call model field. A one-shot client hook enforces a fresh selection on every platform. This applies to parallel work, sequential work, Luna searches, and code review. `craft` owns the complete spec → questions → backend/frontend → test → review → retest sequence. See [agent compatibility](../agents.md) for the portable and client-native boundaries.
