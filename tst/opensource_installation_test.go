@@ -163,6 +163,14 @@ else
 fi
 `)
 	writeExecutable(t, filepath.Join(bin, "codium"), "#!/bin/sh\n[ \"$1\" = \"--list-extensions\" ] && echo qwenlm.qwen-code-vscode-ide-companion\n")
+	writeExecutable(t, filepath.Join(bin, "systemctl"), `#!/bin/sh
+case "$1" in
+  restart|enable) exit 0 ;;
+  list-unit-files) echo 'ollama.service enabled' ;;
+  *) exit 0 ;;
+esac
+`)
+	writeExecutable(t, filepath.Join(bin, "sudo"), "#!/bin/sh\nexec \"$@\"\n")
 
 	installer := filepath.Join(root, "run", "install-opensource.sh")
 	command := exec.Command(installer)

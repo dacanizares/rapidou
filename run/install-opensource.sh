@@ -38,10 +38,13 @@ wait_for_api() {
 }
 
 ollama_service_available() {
-    command -v systemctl >/dev/null 2>&1 \
-        && systemctl list-unit-files --type=service 2>/dev/null \
-            | awk '{print $1}' \
-            | grep -Fxq ollama.service
+    [[ -f /etc/systemd/system/ollama.service \
+        || -f /usr/lib/systemd/system/ollama.service \
+        || -f /lib/systemd/system/ollama.service ]] \
+        || (command -v systemctl >/dev/null 2>&1 \
+            && systemctl list-unit-files --type=service 2>/dev/null \
+                | awk '{print $1}' \
+                | grep -Fxq ollama.service)
 }
 
 install_ollama() {
@@ -69,7 +72,6 @@ start_ollama() {
 }
 
 restart_ollama_after_update() {
-    local pid executable arguments stopped=false
     if ollama_service_available; then
         if [[ "$(id -u)" -eq 0 ]]; then
             systemctl restart ollama
@@ -80,19 +82,6 @@ restart_ollama_after_update() {
         return
     fi
 
-    while read -r pid executable arguments; do
-        if [[ "${executable##*/}" == "ollama" && "$arguments" == "serve" ]]; then
-            kill "$pid"
-            stopped=true
-        fi
-    done < <(ps -eo pid=,args=)
-
-    if [[ "$stopped" == true ]]; then
-        for _ in {1..30}; do
-            api_ready || break
-            sleep 0.2
-        done
-    fi
     if ! api_ready; then
         start_ollama
     fi
