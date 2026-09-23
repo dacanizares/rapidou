@@ -292,7 +292,8 @@ func TestDocumentationRoutes(t *testing.T) {
 	}
 	for _, required := range []string{
 		"Any Application", "git submodule add", "./lib/rapidou/run/install",
-		"craft skill", "docs/shared/principles.md", "AGENTS.md", "CLAUDE.md",
+		"Example prompt", "only an example", "community astronomy club", "craft skill",
+		"docs/shared/principles.md", "AGENTS.md", "CLAUDE.md",
 	} {
 		if !strings.Contains(string(readme), required) {
 			t.Fatalf("README is missing onboarding route %q", required)

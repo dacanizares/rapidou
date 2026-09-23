@@ -15,11 +15,27 @@ git submodule add <rapidou-repository-url> lib/rapidou
 ./lib/rapidou/run/install
 ```
 
-Restart Codex or Claude. In Codex, open `/hooks` once and trust the project hook. Then ask the agent:
+Restart Codex or Claude. In Codex, open `/hooks` once and trust the project hook. Then describe the application in normal language.
+
+### Example prompt
+
+This is only an example—the subject, features, and visual direction are yours:
 
 ```text
-Use Rapidou's craft skill to build <describe the application>.
-Use lib/rapidou/src as the base example and keep the application simple.
+Use Rapidou's craft skill to build a community astronomy club website.
+
+Visitors can browse upcoming observation nights and a photo gallery. Clicking
+an event opens its full description, location, date, and registration link.
+
+An administrator signs in to create, edit, and delete events, and can add
+multiple images by upload or URL. Handle realistic empty and invalid inputs.
+
+Use a modern editorial style: midnight blue, warm cream, large headings,
+responsive cards, and simple dialogs. No animation is necessary.
+
+Use lib/rapidou/src only as the base example. Write the spec first, implement
+the complete application, test its API and real UI clicks in Docker, review it,
+and run the final functional test again.
 ```
 
 Rapidou does not blindly copy `src/`: the agent adapts the working example to the specification, writes the functional contract, implements the application, drives it through Chromium, reviews it independently, and runs the final test again.
