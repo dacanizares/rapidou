@@ -3,7 +3,7 @@ set -euo pipefail
 
 rapidou_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 prompt_file="$rapidou_root/ai/benchmarks/instagram-like-prompt.md"
-output_root="$rapidou_root/run/tmp"
+output_root="$rapidou_root/tmp"
 selection="all"
 turns=80
 wall_time=90m
@@ -17,7 +17,7 @@ usage: run/benchmark-instagram.sh [options]
 Runs comparable isolated Instagram-like application builds.
 
   --output DIRECTORY     New directory that will receive one Git worktree per trial
-                         (default: run/tmp beside this script).
+                         (default: tmp/ at the Rapidou repository root).
   --run NAME             all (default), codex, codex-oss-qwen27b, qwen-9b, or qwen-27b.
   --prepare              Pull both local Ollama models and exit; setup time is not measured.
   --turns NUMBER         Maximum agent turns per Qwen trial (default: 80).

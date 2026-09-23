@@ -36,10 +36,10 @@ From `run/`, launch everything with one command:
 ./benchmark-instagram.sh
 ```
 
-It creates `run/tmp/only-codex`, `run/tmp/codex-ollama`, `run/tmp/qwen-9b`, and
-`run/tmp/qwen-27b`. Each contains `app/` (the resulting application worktree),
+It creates `tmp/only-codex`, `tmp/codex-ollama`, `tmp/qwen-9b`, and
+`tmp/qwen-27b`. Each contains `app/` (the resulting application worktree),
 the immutable `prompt.md`, `agent.json` or `agent.jsonl`, and `metadata.json`.
-The script refuses to overwrite an existing `run/tmp` benchmark. The defaults
+The script refuses to overwrite an existing `tmp` benchmark. The defaults
 allow 80 Qwen turns and 90 minutes per trial; adjust them only for all trials if
 you need a different budget:
 

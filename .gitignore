@@ -3,5 +3,3 @@
 /data/*.db
 /data/*.db-*
 /tmp/
-
-/run/tmp/
